@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Compiled Rubric Rule",
+  "description": "Schema for a single rule extracted from a rubric document. Each rule represents one evaluable criterion.",
+  "type": "object",
+  "required": ["rule_id", "rule_name", "description", "category", "is_autofail", "points"],
+  "properties": {
+    "rule_id": {
+      "type": "string",
+      "description": "Unique identifier for this rule, e.g. 'STRUCT-001'."
+    },
+    "rule_name": {
+      "type": "string",
+      "description": "Short human-readable name for the rule."
+    },
+    "description": {
+      "type": "string",
+      "description": "Full description of what this rule evaluates and what constitutes a pass or fail."
+    },
+    "example": {
+      "type": "string",
+      "description": "Optional example of a passing or failing case."
+    },
+    "category": {
+      "type": "string",
+      "description": "Category grouping for this rule, e.g. 'Structure', 'Completeness', 'Accuracy'."
+    },
+    "is_autofail": {
+      "type": "boolean",
+      "description": "If true, failing this rule fails the entire evaluation regardless of points."
+    },
+    "points": {
+      "type": "integer",
+      "description": "Point value for this rule. Higher points indicate higher importance.",
+      "minimum": 0
+    },
+    "sub_conditions": {
+      "type": "array",
+      "description": "For composite rules only. Each sub-condition must be evaluated, combined with the specified operator.",
+      "items": {
+        "type": "object",
+        "required": ["condition", "operator"],
+        "properties": {
+          "condition": {
+            "type": "string",
+            "description": "Description of the sub-condition to evaluate."
+          },
+          "operator": {
+            "type": "string",
+            "enum": ["AND", "OR"],
+            "description": "How this sub-condition combines with others. AND = all must pass. OR = any can pass."
+          }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

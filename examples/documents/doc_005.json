@@ -1,0 +1,78 @@
+{
+  "doc_id": "doc_005",
+  "sections": [
+    {
+      "heading": "Troubleshooting CacheLayer",
+      "content": "CacheLayer is a distributed caching library for Python web applications. This troubleshooting guide covers common issues encountered during setup, operation, and scaling of CacheLayer v4.1.0.",
+      "index": 0
+    },
+    {
+      "heading": "Table of Contents",
+      "content": "- [Connection Issues](#connection-issues)\n- [Cache Misses](#cache-misses)\n- [Memory Issues](#memory-issues)\n- [Serialization Errors](#serialization-errors)\n- [Cluster Problems](#cluster-problems)\n- [Performance Tuning](#performance-tuning)\n- [Known Limitations](#known-limitations)\n- [Getting Help](#getting-help)\n- [Changelog](#changelog)",
+      "index": 1
+    },
+    {
+      "heading": "Connection Issues",
+      "content": "### Cannot connect to cache server\n\n**Symptom**: `ConnectionRefusedError` on startup.\n\n**Cause**: The cache server is not running or is listening on a different port.\n\n**Solution**:\n1. Verify the server is running: `cachelayer status`\n2. Check the port configuration in `cachelayer.yaml`\n3. Ensure firewall rules allow traffic on port 6380\n\n```python\nfrom cachelayer import CacheClient\n\n# Default connection\nclient = CacheClient(host=\"localhost\", port=6380)\n\n# Test connectivity\ntry:\n    client.ping()\n    print(\"Connected\")\nexcept ConnectionError as e:\n    print(f\"Failed: {e}\")\n```\n\n### Timeout on large clusters\n\n**Symptom**: `TimeoutError` when connecting to a cluster with more than 10 nodes.\n\n**Cause**: Default timeout of 5 seconds is too short for large cluster discovery.\n\n**Solution**: Increase the connection timeout:\n```python\nclient = CacheClient(host=\"localhost\", port=6380, timeout=30)\n```",
+      "index": 2
+    },
+    {
+      "heading": "Cache Misses",
+      "content": "### High miss rate after deployment\n\n**Symptom**: Cache hit rate drops below 50% after deploying a new version.\n\n**Cause**: Key format changed between versions. Old keys are never matched.\n\n**Solution**: Flush the cache after deployment or implement versioned key prefixes:\n```python\nclient.set(f\"v{APP_VERSION}:user:{user_id}\", data)\n```\n\n### Stale data after TTL\n\n**Symptom**: Data persists beyond the configured TTL.\n\n**Cause**: TTL is set in seconds but the value passed was in milliseconds.\n\n**Solution**: Ensure TTL is in seconds:\n```python\nclient.set(\"key\", value, ttl=3600)  # 1 hour, not 3600000\n```",
+      "index": 3
+    },
+    {
+      "heading": "Memory Issues",
+      "content": "### Out of memory errors\n\n**Symptom**: Server crashes with `OOM` in logs.\n\n**Cause**: No eviction policy configured. Cache grows until memory is exhausted.\n\n**Solution**: Set an eviction policy in `cachelayer.yaml`:\n```yaml\nmemory:\n  max_bytes: 1073741824  # 1 GB\n  eviction_policy: lru\n```\n\nSupported policies: `lru` (least recently used), `lfu` (least frequently used), `ttl` (oldest TTL first).",
+      "index": 4
+    },
+    {
+      "heading": "Serialization Errors",
+      "content": "### TypeError when caching custom objects\n\n**Symptom**: `TypeError: Object of type MyClass is not JSON serializable`.\n\n**Cause**: Default serializer uses JSON. Custom objects need a custom serializer.\n\n**Solution**: Register a custom serializer:\n```python\nfrom cachelayer import CacheClient, Serializer\n\nclass MySerializer(Serializer):\n    def serialize(self, obj):\n        return pickle.dumps(obj)\n    def deserialize(self, data):\n        return pickle.loads(data)\n\nclient = CacheClient(serializer=MySerializer())\n```\n\nNote: Using pickle introduces security risks. Only use with trusted data.",
+      "index": 5
+    },
+    {
+      "heading": "Cluster Problems",
+      "content": "### Split-brain after network partition\n\n**Symptom**: Two cluster halves accept writes independently.\n\n**Cause**: Network partition without quorum configuration.\n\n**Solution**: Enable quorum mode:\n```yaml\ncluster:\n  quorum: true\n  min_nodes: 3\n```\n\nWith quorum enabled, a partition with fewer than `min_nodes` rejects writes.",
+      "index": 6
+    },
+    {
+      "heading": "Performance Tuning",
+      "content": "### Slow reads under high concurrency\n\n**Solution**: Increase the connection pool size:\n```python\nclient = CacheClient(pool_size=50)  # Default: 10\n```\n\n### High latency on writes\n\n**Solution**: Enable write batching:\n```python\nwith client.batch() as b:\n    for key, value in items:\n        b.set(key, value)\n# All writes sent in one round-trip\n```",
+      "index": 7
+    },
+    {
+      "heading": "Known Limitations",
+      "content": "- Maximum key size: 512 bytes\n- Maximum value size: 64 MB\n- Cluster mode does not support transactions\n- Hot key detection requires v4.2+ (not yet released)",
+      "index": 8
+    },
+    {
+      "heading": "Changelog",
+      "content": "### v4.1.0 (2026-02-01)\n- Added write batching API\n- Fixed memory leak in connection pool\n- Improved cluster discovery performance\n\n### v4.0.0 (2025-10-15)\n- BREAKING: Changed serialization format from msgpack to JSON\n- BREAKING: Removed `CacheClient.connect_cluster()` — use `CacheClient(cluster=True)` instead\n- Added quorum mode for clusters",
+      "index": 9
+    }
+  ],
+  "metadata": {
+    "doc_type": "troubleshooting_guide",
+    "author_hash": "q7r8s9t0",
+    "project": "CacheLayer",
+    "version": "4.1.0"
+  },
+  "ground_truth": [
+    {"rule_id": "STRUCT-001", "verdict": "pass", "evidence_text": "First section describes CacheLayer and the guide's scope", "severity": "major"},
+    {"rule_id": "STRUCT-002", "verdict": "pass", "evidence_text": "Table of contents present with links", "severity": "minor"},
+    {"rule_id": "STRUCT-003", "verdict": "pass", "evidence_text": "Consistent hierarchy: H2 for main sections, H3 for subsections", "severity": "minor"},
+    {"rule_id": "COMP-001", "verdict": "pass", "evidence_text": "CacheClient parameters documented inline with type info", "severity": "major"},
+    {"rule_id": "COMP-002", "verdict": "fail", "evidence_text": "client.ping() and client.batch() return values not documented", "severity": "major"},
+    {"rule_id": "COMP-003", "verdict": "pass", "evidence_text": "Error types documented (ConnectionRefusedError, TimeoutError, TypeError)", "severity": "major"},
+    {"rule_id": "COMP-004", "verdict": "fail", "evidence_text": "No authentication documentation for cache server access", "severity": "major"},
+    {"rule_id": "CODE-001", "verdict": "pass", "evidence_text": "Code examples in every troubleshooting section", "severity": "major"},
+    {"rule_id": "CODE-002", "verdict": "pass", "evidence_text": "All Python examples have language labels and valid syntax", "severity": "major"},
+    {"rule_id": "CODE-003", "verdict": "pass", "evidence_text": "Examples use current v4 API surface", "severity": "critical"},
+    {"rule_id": "ACC-001", "verdict": "pass", "evidence_text": "v4.1.0 referenced in overview, changelog present", "severity": "major"},
+    {"rule_id": "ACC-002", "verdict": "pass", "evidence_text": "Internal links in TOC only, no external links", "severity": "minor"},
+    {"rule_id": "COMPL-001", "verdict": "fail", "evidence_text": "No license section present", "severity": "minor"},
+    {"rule_id": "COMPL-002", "verdict": "pass", "evidence_text": "Changelog documents breaking changes in v4.0.0", "severity": "critical"},
+    {"rule_id": "COMPL-003", "verdict": "fail", "evidence_text": "CacheClient.connect_cluster() removed but no deprecation notice with version", "severity": "major"}
+  ]
+}

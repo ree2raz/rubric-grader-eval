@@ -1,0 +1,78 @@
+{
+  "doc_id": "doc_002",
+  "sections": [
+    {
+      "heading": "Getting Started with DataPipe",
+      "content": "DataPipe is a streaming data processing framework for Python. It handles real-time event ingestion, transformation, and routing to downstream sinks. This tutorial walks through setting up a basic pipeline that reads from a webhook source and writes to a PostgreSQL database.",
+      "index": 0
+    },
+    {
+      "heading": "Prerequisites",
+      "content": "Before starting, ensure you have:\n- Python 3.10 or later\n- PostgreSQL 14+ running locally\n- A basic understanding of async Python\n\nNo prior experience with DataPipe is required.",
+      "index": 1
+    },
+    {
+      "heading": "Installation",
+      "content": "Install DataPipe using pip:\n\n```bash\npip install datapipe==2.3.0\n```\n\nFor development, install with extras:\n\n```bash\npip install datapipe[dev]==2.3.0\n```",
+      "index": 2
+    },
+    {
+      "heading": "Step 1: Define a Source",
+      "content": "A source is where your pipeline reads data from. DataPipe supports webhooks, Kafka, and file watchers.\n\nFor this tutorial, we use a webhook source that listens for HTTP POST requests:\n\n```\nsource = WebhookSource(port=8080)\npipeline.add_source(source)\n```\n\nNote: The source starts listening when the pipeline is activated.",
+      "index": 3
+    },
+    {
+      "heading": "Step 2: Add a Transformer",
+      "content": "Transformers modify events as they flow through the pipeline. Here we add a field extraction transformer that pulls specific keys from the incoming JSON payload.\n\nThe transformer configuration accepts a list of field paths using dot notation. Nested fields like `user.profile.name` are supported.",
+      "index": 4
+    },
+    {
+      "heading": "Step 3: Configure the Sink",
+      "content": "The sink is where processed events are written. We configure a PostgreSQL sink:\n\nConnection parameters:\n- host: localhost\n- port: 5432\n- database: events_db\n- table: processed_events\n\nThe sink auto-creates the target table if it does not exist. Schema is inferred from the first batch of events.",
+      "index": 5
+    },
+    {
+      "heading": "Step 4: Run the Pipeline",
+      "content": "Activate the pipeline:\n\n```\npipeline.run()\n```\n\nThe pipeline runs until interrupted. Send a test event:\n\n```bash\ncurl -X POST http://localhost:8080/events -H 'Content-Type: application/json' -d '{\"user\": {\"name\": \"Alice\"}, \"action\": \"login\"}'\n```\n\nCheck your PostgreSQL table to confirm the event was processed.",
+      "index": 6
+    },
+    {
+      "heading": "Error Handling",
+      "content": "DataPipe retries failed sink writes up to 3 times with exponential backoff. If all retries fail, the event is written to a dead-letter queue (DLQ) file at `./dlq/failed_events.jsonl`.\n\nTo handle source errors, wrap the pipeline in a try/except block and check the pipeline's error log.",
+      "index": 7
+    },
+    {
+      "heading": "Next Steps",
+      "content": "Now that you have a basic pipeline running, explore:\n- Adding multiple transformers in sequence\n- Using Kafka as a source\n- Deploying with Docker\n\nSee the full API reference at https://docs.datapipe.dev/api for details.",
+      "index": 8
+    },
+    {
+      "heading": "Changelog",
+      "content": "### v2.3.0\n- Added file watcher source\n- Improved PostgreSQL sink performance\n\n### v2.0.0\n- BREAKING: Changed transformer API from class-based to functional\n- Removed legacy XML source",
+      "index": 9
+    }
+  ],
+  "metadata": {
+    "doc_type": "tutorial",
+    "author_hash": "e5f6g7h8",
+    "project": "DataPipe",
+    "version": "2.3.0"
+  },
+  "ground_truth": [
+    {"rule_id": "STRUCT-001", "verdict": "pass", "evidence_text": "Getting Started section serves as overview, describes what DataPipe does", "severity": "major"},
+    {"rule_id": "STRUCT-002", "verdict": "fail", "evidence_text": "No table of contents despite having more than 5 sections", "severity": "minor"},
+    {"rule_id": "STRUCT-003", "verdict": "pass", "evidence_text": "Consistent heading hierarchy throughout", "severity": "minor"},
+    {"rule_id": "COMP-001", "verdict": "fail", "evidence_text": "Transformer parameters not documented with types", "severity": "major"},
+    {"rule_id": "COMP-002", "verdict": "fail", "evidence_text": "Pipeline.run() return value not described", "severity": "major"},
+    {"rule_id": "COMP-003", "verdict": "pass", "evidence_text": "Error handling section describes retry behavior and DLQ", "severity": "major"},
+    {"rule_id": "COMP-004", "verdict": "fail", "evidence_text": "No authentication section — webhook source has no auth described", "severity": "major"},
+    {"rule_id": "CODE-001", "verdict": "pass", "evidence_text": "Code examples present in Steps 1, 4, and curl command", "severity": "major"},
+    {"rule_id": "CODE-002", "verdict": "fail", "evidence_text": "Step 1 and Step 4 examples lack language labels and import statements", "severity": "major"},
+    {"rule_id": "CODE-003", "verdict": "pass", "evidence_text": "pip install references current version 2.3.0", "severity": "critical"},
+    {"rule_id": "ACC-001", "verdict": "pass", "evidence_text": "Version 2.3.0 used consistently", "severity": "major"},
+    {"rule_id": "ACC-002", "verdict": "fail", "evidence_text": "External link to docs.datapipe.dev not verifiable", "severity": "minor"},
+    {"rule_id": "COMPL-001", "verdict": "fail", "evidence_text": "No license section present", "severity": "minor"},
+    {"rule_id": "COMPL-002", "verdict": "pass", "evidence_text": "Changelog documents breaking change in v2.0.0", "severity": "critical"},
+    {"rule_id": "COMPL-003", "verdict": "fail", "evidence_text": "Legacy XML source removed but no deprecation notice in docs", "severity": "major"}
+  ]
+}

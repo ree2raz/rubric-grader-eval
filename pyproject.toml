@@ -1,0 +1,58 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "llm-rubric-eval"
+version = "0.1.0"
+description = "Reference implementation: eval harness for rubric-driven LLM grading systems"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {file = "LICENSE"}
+keywords = ["llm", "evaluation", "rubric", "grading", "structured-output"]
+authors = [
+    {name = "Rituraj", email = "ree2raz@proton.me"},
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "pydantic>=2.0",
+    "anthropic>=0.40",
+    "openai>=1.0",
+    "python-dotenv>=1.0",
+    "tiktoken>=0.7",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[project.urls]
+Repository = "https://github.com/ree2raz/llm-rubric-eval"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/rubric_eval"]
+
+[tool.hatch.build]
+include = [
+    "src/rubric_eval/**/*.py",
+    "src/rubric_eval/prompts/*.md",
+    "schema/*.json",
+    "README.md",
+    "LICENSE",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]

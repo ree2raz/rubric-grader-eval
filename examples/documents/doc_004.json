@@ -1,0 +1,88 @@
+{
+  "doc_id": "doc_004",
+  "sections": [
+    {
+      "heading": "Migration Guide: LogRouter v2 to v3",
+      "content": "This guide covers the migration from LogRouter v2.x to v3.0.0. LogRouter is a log aggregation and routing service that collects structured logs from application instances and forwards them to configured sinks (Elasticsearch, S3, Datadog).",
+      "index": 0
+    },
+    {
+      "heading": "Table of Contents",
+      "content": "1. [Overview](#overview)\n2. [Breaking Changes](#breaking-changes)\n3. [New Features](#new-features)\n4. [Step-by-Step Migration](#step-by-step-migration)\n5. [Configuration Changes](#configuration-changes)\n6. [SDK Updates](#sdk-updates)\n7. [Testing Your Migration](#testing-your-migration)\n8. [Rollback Procedure](#rollback-procedure)\n9. [FAQ](#faq)\n10. [Changelog](#changelog)\n11. [License](#license)",
+      "index": 1
+    },
+    {
+      "heading": "Breaking Changes",
+      "content": "### Removed Features\n- **XML log format**: No longer supported. All logs must use JSON format.\n- **Legacy sink API** (`/v2/sinks`): Removed. Use `/v3/destinations` instead.\n- **`LogRouter.connect()` method**: Replaced by `LogRouter.init()` which accepts a config object instead of positional arguments.\n\n### Changed Behavior\n- Log levels are now case-sensitive. `INFO` is valid, `info` is not.\n- Timestamp format changed from Unix epoch (integer) to ISO 8601 (string).\n- Maximum batch size reduced from 10,000 to 5,000 events per request.",
+      "index": 2
+    },
+    {
+      "heading": "New Features",
+      "content": "- **Structured sampling**: Sample logs by field value (e.g., sample 10% of DEBUG logs)\n- **Dead letter queue**: Failed deliveries are now queued locally and retried\n- **Metrics endpoint**: `/v3/metrics` exposes Prometheus-compatible metrics\n- **Multi-region routing**: Route logs to region-specific sinks based on source metadata",
+      "index": 3
+    },
+    {
+      "heading": "Step-by-Step Migration",
+      "content": "### 1. Update the SDK\n\n```bash\npip install logrouter==3.0.0\n```\n\n### 2. Update Initialization\n\nBefore (v2):\n```python\nfrom logrouter import LogRouter\nrouter = LogRouter.connect(\"localhost\", 9200, \"my-index\")\n```\n\nAfter (v3):\n```python\nfrom logrouter import LogRouter, Config\nconfig = Config(host=\"localhost\", port=9200, index=\"my-index\")\nrouter = LogRouter.init(config)\n```\n\n### 3. Update Log Format\n\nReplace any XML log producers with JSON format.\n\n### 4. Update Sink Endpoints\n\nReplace `/v2/sinks` calls with `/v3/destinations`. The request body format is unchanged.\n\n### 5. Update Timestamp Format\n\nBefore: `{\"timestamp\": 1711929600}`\nAfter: `{\"timestamp\": \"2024-04-01T00:00:00Z\"}`",
+      "index": 4
+    },
+    {
+      "heading": "Configuration Changes",
+      "content": "The configuration file format changed from INI to YAML in v3.\n\nBefore (`logrouter.ini`):\n```ini\n[server]\nhost = localhost\nport = 9200\n\n[sink]\ntype = elasticsearch\nindex = logs\n```\n\nAfter (`logrouter.yaml`):\n```yaml\nserver:\n  host: localhost\n  port: 9200\nsink:\n  type: elasticsearch\n  index: logs\n  batch_size: 5000\n```",
+      "index": 5
+    },
+    {
+      "heading": "SDK Updates",
+      "content": "### Python SDK\n\nThe Python SDK v3.0.0 requires Python 3.10+.\n\nNew methods:\n- `router.sample(level=\"DEBUG\", rate=0.1)` — configure structured sampling\n- `router.metrics()` — fetch current metrics\n\nRemoved methods:\n- `router.connect()` — use `LogRouter.init(config)` instead\n- `router.set_format(\"xml\")` — XML format no longer supported\n\n### Parameters\n\n`Config` constructor:\n- `host` (str, required): Server hostname\n- `port` (int, required): Server port\n- `index` (str, required): Default log index\n- `batch_size` (int, optional): Events per batch. Default: 1000. Max: 5000.\n- `retry_count` (int, optional): Retry attempts for failed deliveries. Default: 3.",
+      "index": 6
+    },
+    {
+      "heading": "Error Handling",
+      "content": "v3 introduces structured error responses:\n\n```json\n{\"error\": {\"code\": \"BATCH_TOO_LARGE\", \"message\": \"Batch size 6000 exceeds maximum of 5000\", \"request_id\": \"req_abc123\"}}\n```\n\nError codes:\n- `BATCH_TOO_LARGE`: Reduce batch size\n- `INVALID_FORMAT`: Log must be JSON, not XML\n- `AUTH_EXPIRED`: Refresh your API token\n- `SINK_UNREACHABLE`: Check destination connectivity",
+      "index": 7
+    },
+    {
+      "heading": "Testing Your Migration",
+      "content": "Run the migration validator:\n\n```bash\nlogrouter validate --config logrouter.yaml --dry-run\n```\n\nThis checks your configuration file, tests sink connectivity, and validates a sample log entry against the v3 format requirements.",
+      "index": 8
+    },
+    {
+      "heading": "Rollback Procedure",
+      "content": "If migration fails:\n1. Revert to `logrouter==2.9.0`\n2. Restore your `logrouter.ini` configuration\n3. Restart the service\n\nv2 and v3 cannot run simultaneously on the same port.",
+      "index": 9
+    },
+    {
+      "heading": "Changelog",
+      "content": "### v3.0.0 (2026-04-01)\n- BREAKING: Removed XML log format support\n- BREAKING: Removed legacy `/v2/sinks` endpoint\n- BREAKING: Changed `LogRouter.connect()` to `LogRouter.init(config)`\n- BREAKING: Timestamp format changed to ISO 8601\n- Added structured sampling\n- Added dead letter queue\n- Added Prometheus metrics endpoint\n- Added multi-region routing",
+      "index": 10
+    },
+    {
+      "heading": "License",
+      "content": "LogRouter is licensed under the MIT License. See [LICENSE](./LICENSE) for the full text.",
+      "index": 11
+    }
+  ],
+  "metadata": {
+    "doc_type": "migration_guide",
+    "author_hash": "m3n4o5p6",
+    "project": "LogRouter",
+    "version": "3.0.0"
+  },
+  "ground_truth": [
+    {"rule_id": "STRUCT-001", "verdict": "pass", "evidence_text": "First section serves as overview describing LogRouter and the migration scope", "severity": "major"},
+    {"rule_id": "STRUCT-002", "verdict": "pass", "evidence_text": "Table of contents present with links to all sections", "severity": "minor"},
+    {"rule_id": "STRUCT-003", "verdict": "pass", "evidence_text": "Consistent heading hierarchy with H2 sections and H3 subsections", "severity": "minor"},
+    {"rule_id": "COMP-001", "verdict": "pass", "evidence_text": "Config constructor parameters documented with name, type, required/optional", "severity": "major"},
+    {"rule_id": "COMP-002", "verdict": "fail", "evidence_text": "router.sample() and router.metrics() return values not described", "severity": "major"},
+    {"rule_id": "COMP-003", "verdict": "pass", "evidence_text": "Error handling section with error codes and messages", "severity": "major"},
+    {"rule_id": "COMP-004", "verdict": "fail", "evidence_text": "AUTH_EXPIRED error mentioned but authentication method not documented", "severity": "major"},
+    {"rule_id": "CODE-001", "verdict": "pass", "evidence_text": "Multiple code examples throughout migration steps", "severity": "major"},
+    {"rule_id": "CODE-002", "verdict": "pass", "evidence_text": "All examples have language labels and valid syntax", "severity": "major"},
+    {"rule_id": "CODE-003", "verdict": "pass", "evidence_text": "Examples use v3 API (LogRouter.init, /v3/destinations)", "severity": "critical"},
+    {"rule_id": "ACC-001", "verdict": "pass", "evidence_text": "Version 3.0.0 referenced consistently", "severity": "major"},
+    {"rule_id": "ACC-002", "verdict": "pass", "evidence_text": "Internal links in TOC, LICENSE link present", "severity": "minor"},
+    {"rule_id": "COMPL-001", "verdict": "pass", "evidence_text": "License section present with MIT License reference", "severity": "minor"},
+    {"rule_id": "COMPL-002", "verdict": "pass", "evidence_text": "Changelog documents all breaking changes in v3.0.0", "severity": "critical"},
+    {"rule_id": "COMPL-003", "verdict": "fail", "evidence_text": "Removed features listed but no formal deprecation notices with version numbers", "severity": "major"}
+  ]
+}

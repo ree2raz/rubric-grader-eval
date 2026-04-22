@@ -1,0 +1,51 @@
+Technical Documentation Quality Assessment Rubric
+Prepared by: Documentation Standards Committee
+Last Updated: March 2026
+Version 3.1
+
+Section 1: Document Structure and Organization
+
+The following criteria assess whether the document
+follows standard structural conventions for
+technical documentation.
+
+Rule,Description,Category,Points
+S-1,"Overview or summary section is present
+and appears within the first page",Structure,5
+S-2,"Heading levels are consistent (no skipping
+from H1 to H3)",Structure,3
+S-3,Navigation aids (TOC or sidebar) present for documents exceeding 2000 words,Structure,3
+
+Section 2: Content Completeness
+
+These rules verify that the technical content
+is sufficiently thorough for the intended audience.
+
+Rule,Description,Category,Points,Critical
+C-1,All function parameters include name and type,Completeness,5,No
+C-2,"Return values documented with type
+description and edge cases",Completeness,5,No
+C-3,Error handling section present with specific error types,Completeness,4,No
+C-4,"Authentication requirements
+fully described including
+token format and expiration",Completeness,4,No
+
+Section 3: Code Examples
+
+Rule,Description,Category,Points,Critical
+E-1,"At least one code example
+per major feature",Code Quality,5,No
+E-2,All examples are syntactically valid,Code Quality,4,No
+E-3,Examples tested against current version,Code Quality,4,No
+
+CRITICAL RULES — Automatic Failure
+
+The following rules result in automatic document rejection
+if violated. These are non-negotiable.
+
+Rule,Description,Category,Points
+F-1,"Undocumented breaking changes in current release
+(MANDATORY — any violation results in
+automatic rejection)",Compliance,5
+F-2,Dead links or references to removed content,Accuracy,3
+F-3,Version numbers that do not match the current release,Accuracy,3

@@ -1,0 +1,13 @@
+Rule ID,Rule Name,Category,Description,Points,Auto-Fail,Notes
+BC-001,Quickstart AND API Reference,Structure,"The document must include both a quickstart guide and a full API reference section.",5,No,"AND — both sections must be present. Evaluate as composite."
+BC-002,Installation Steps,Structure,"Installation instructions must be provided with platform-specific commands.",3,No,
+BC-003,Getting Started Example,Code Quality,"A getting-started code example must be present AND must be runnable without modification.",5,No,"AND — presence alone is not sufficient; the example must be self-contained."
+BC-004,Error Codes OR Error Messages,Completeness,"The document must include either a table of error codes OR inline error message descriptions for each endpoint.",4,No,"OR — either format is acceptable. Check for at least one."
+BC-005,Authentication via Header OR Query Param,Completeness,"Authentication documentation must describe header-based auth OR query-parameter auth.",4,No,"OR — document at least one method."
+BC-006,SDK Examples in Python AND JavaScript,Code Quality,"Code examples must be provided in both Python AND JavaScript. Other languages are optional.",5,Yes,"AND — both languages required. Missing either is auto-fail."
+BC-007,Versioning Policy,Compliance,"The document must state the versioning policy (semver, calver, or custom).",2,No,
+BC-008,Rate Limiting Documented,Completeness,"Rate limits must be documented with specific numbers (requests per minute or per hour).",3,No,
+BC-009,Pagination Described,Completeness,"If the API returns lists, pagination must be documented with cursor OR offset parameters.",3,No,"OR — either pagination style documented."
+BC-010,Webhook Events AND Retry Policy,Completeness,"If webhooks are supported: event types must be listed AND retry/backoff policy must be described.",4,No,"AND — both required if webhooks exist. Skip if no webhooks."
+BC-011,Search Functionality,Completeness,"The documentation must include a search feature or index.",2,No,
+BC-012,Response Schema Documented,Completeness,"Every endpoint must have its response schema documented with field names AND types.",4,No,"AND — field names alone are insufficient."

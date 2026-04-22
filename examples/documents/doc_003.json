@@ -1,0 +1,63 @@
+{
+  "doc_id": "doc_003",
+  "sections": [
+    {
+      "heading": "ConfigVault",
+      "content": "A lightweight configuration management library.",
+      "index": 0
+    },
+    {
+      "heading": "Install",
+      "content": "```bash\npip install configvault\n```",
+      "index": 1
+    },
+    {
+      "heading": "Usage",
+      "content": "```python\nfrom configvault import Vault\n\nv = Vault(\"config.yaml\")\ndb_host = v.get(\"database.host\")\n```",
+      "index": 2
+    },
+    {
+      "heading": "Configuration Format",
+      "content": "ConfigVault reads YAML files. Keys use dot-notation for nested values.\n\nExample config.yaml:\n```yaml\ndatabase:\n  host: localhost\n  port: 5432\napi:\n  key: your-key-here\n```",
+      "index": 3
+    },
+    {
+      "heading": "Environment Overrides",
+      "content": "Environment variables override config file values. The mapping is automatic: `database.host` maps to `CONFIGVAULT_DATABASE_HOST`.\n\nSet the prefix with:\n```python\nv = Vault(\"config.yaml\", env_prefix=\"MYAPP\")\n```\nThen `database.host` maps to `MYAPP_DATABASE_HOST`.",
+      "index": 4
+    },
+    {
+      "heading": "Encryption",
+      "content": "Sensitive values can be encrypted at rest. Use the CLI to encrypt:\n```bash\nconfigvault encrypt config.yaml --key mykey\n```\nDecryption is automatic when loading with the key:\n```python\nv = Vault(\"config.yaml\", encryption_key=\"mykey\")\n```",
+      "index": 5
+    },
+    {
+      "heading": "Contributing",
+      "content": "PRs welcome. Run tests with `pytest`. Format with `black`.",
+      "index": 6
+    }
+  ],
+  "metadata": {
+    "doc_type": "readme",
+    "author_hash": "i9j0k1l2",
+    "project": "ConfigVault",
+    "version": "1.4.2"
+  },
+  "ground_truth": [
+    {"rule_id": "STRUCT-001", "verdict": "pass", "evidence_text": "First section describes what ConfigVault does", "severity": "major"},
+    {"rule_id": "STRUCT-002", "verdict": "fail", "evidence_text": "7 sections but no table of contents", "severity": "minor"},
+    {"rule_id": "STRUCT-003", "verdict": "pass", "evidence_text": "All headings are at the same level, consistent", "severity": "minor"},
+    {"rule_id": "COMP-001", "verdict": "fail", "evidence_text": "Vault constructor parameters not documented with types", "severity": "major"},
+    {"rule_id": "COMP-002", "verdict": "fail", "evidence_text": "Vault.get() return type not described", "severity": "major"},
+    {"rule_id": "COMP-003", "verdict": "fail", "evidence_text": "No error handling documentation", "severity": "major"},
+    {"rule_id": "COMP-004", "verdict": "fail", "evidence_text": "No authentication documentation", "severity": "major"},
+    {"rule_id": "CODE-001", "verdict": "pass", "evidence_text": "Multiple code examples present", "severity": "major"},
+    {"rule_id": "CODE-002", "verdict": "pass", "evidence_text": "Python and bash examples with language labels", "severity": "major"},
+    {"rule_id": "CODE-003", "verdict": "fail", "evidence_text": "pip install does not specify version, cannot verify current API", "severity": "critical"},
+    {"rule_id": "ACC-001", "verdict": "fail", "evidence_text": "No version number mentioned in document body", "severity": "major"},
+    {"rule_id": "ACC-002", "verdict": "pass", "evidence_text": "No links present to break", "severity": "minor"},
+    {"rule_id": "COMPL-001", "verdict": "fail", "evidence_text": "No license section", "severity": "minor"},
+    {"rule_id": "COMPL-002", "verdict": "fail", "evidence_text": "No changelog present — cannot verify breaking change documentation", "severity": "critical"},
+    {"rule_id": "COMPL-003", "verdict": "fail", "evidence_text": "No deprecation notices present", "severity": "major"}
+  ]
+}
