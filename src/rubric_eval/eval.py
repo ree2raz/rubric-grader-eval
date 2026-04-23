@@ -34,7 +34,6 @@ def _aggregate_verdicts(
     """
     rule_verdicts: dict[str, str] = {}
     for ev in evaluations:
-        current = rule_verdicts.get(ev.rule_id, "fail")
         if ev.verdict == "pass":
             rule_verdicts[ev.rule_id] = "pass"
         elif ev.rule_id not in rule_verdicts:

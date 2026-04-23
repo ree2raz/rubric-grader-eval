@@ -15,7 +15,7 @@ The eval harness is the point. The compiler and evaluator demonstrate the patter
 ## What this is not
 
 - **Not a product.** Synthetic data, no optimizations, no production error handling.
-- **Not the 2026 architecture.** The blog post describes an agentic rebuild with tool use, budget-aware routing, and eval-driven prompt optimization. This repo does none of that. For that pattern, see [RegTriage](https://github.com/ree2raz/reg-triage-openenv).
+- **Not the 2026 architecture.** The blog post describes an agentic rebuild with tool use, budget-aware routing, and eval-driven prompt optimization. This repo does none of that. For that pattern, see [RegTriage](https://github.com/ree2raz/RegTriage-OpenEnv).
 - **Not optimized.** The evaluator runs every rule on every chunk. A rule checking for an overview section evaluates the changelog. This is the part to fix first — the repo makes the cost visible so you can measure the improvement when you do.
 
 ## Quickstart
@@ -65,6 +65,41 @@ The eval harness (`eval.py`) is the part worth studying. It loads documents with
 
 This implements the "micro golden set" pattern: a small, hand-labeled reference set that tells you whether your system is improving or regressing when you change prompts, models, or chunking strategies.
 
+## Sample Output
+
+Running the eval harness on all five example documents produces output like this:
+
+```
+======================================================================
+EVAL HARNESS RESULTS
+======================================================================
+
+Overall accuracy: 0.813 (61/75)
+
+Category                   Prec    Rec     F1   TP   FP   FN
+------------------------------------------------------------
+Accuracy                   0.600  1.000  0.750    3    2    0
+Code Quality               0.667  1.000  0.800    4    2    0
+Completeness               0.818  0.900  0.857    9    2    1
+Compliance                 0.714  0.833  0.769    5    2    1
+Structure                  1.000  1.000  1.000    2    0    0
+
+Doc          Rule           System   Truth    Match
+--------------------------------------------------
+doc_001      STRUCT-001     pass     pass     yes
+doc_001      COMP-001       pass     pass     yes
+doc_001      COMPL-002      pass     pass     yes
+doc_002      STRUCT-002     fail     fail     yes
+doc_002      CODE-002       fail     fail     yes
+doc_003      COMP-001       fail     fail     yes
+doc_003      COMPL-002      pass     fail     NO
+...
+
+======================================================================
+```
+
+The agreement table shows every verdict. Rows marked `NO` are where the system disagrees with the hand-labeled ground truth — these are the cases worth investigating when tuning prompts or switching models.
+
 ## Limitations
 
 Four known failure modes, documented here because shipping with honest limitations is more useful than hiding them:
@@ -79,8 +114,8 @@ Four known failure modes, documented here because shipping with honest limitatio
 
 ## Background Reading
 
-- [Automating Insurance Call-Center QA: What Worked, What Broke, and What I'd Rebuild](TODO_BLOG_URL) — the blog post that describes these rubric grading patterns in a production context
-- [RegTriage](https://github.com/ree2raz/reg-triage-openenv) — an agentic environment for compliance auditing that implements the "what I'd rebuild" architecture
+- [Automating Insurance Call-Center QA: What Worked, What Broke, and What I'd Rebuild](https://www.rituraj.info/posts/insurance-qa-llm-scorecard-pattern/) — the blog post that describes these rubric grading patterns in a production context
+- [RegTriage](https://github.com/ree2raz/RegTriage-OpenEnv) — an agentic environment for compliance auditing that implements the "what I'd rebuild" architecture
 
 ## License
 
