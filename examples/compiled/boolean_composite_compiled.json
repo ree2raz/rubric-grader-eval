@@ -1,0 +1,198 @@
+{
+  "rules": [
+    {
+      "rule_id": "BC-001",
+      "rule_name": "Quickstart AND API Reference",
+      "description": "The document must include both a quickstart guide and a full API reference section. AND — both sections must be present. Evaluate as composite.",
+      "example": null,
+      "category": "Structure",
+      "is_autofail": false,
+      "points": 5,
+      "sub_conditions": [
+        {
+          "condition": "Quickstart guide present",
+          "operator": "AND"
+        },
+        {
+          "condition": "Full API reference section present",
+          "operator": "AND"
+        }
+      ]
+    },
+    {
+      "rule_id": "BC-002",
+      "rule_name": "Installation Steps",
+      "description": "Installation instructions must be provided with platform-specific commands.",
+      "example": null,
+      "category": "Structure",
+      "is_autofail": false,
+      "points": 3,
+      "sub_conditions": null
+    },
+    {
+      "rule_id": "BC-003",
+      "rule_name": "Getting Started Example",
+      "description": "A getting-started code example must be present AND must be runnable without modification. AND — presence alone is not sufficient; the example must be self-contained.",
+      "example": null,
+      "category": "Code Quality",
+      "is_autofail": false,
+      "points": 5,
+      "sub_conditions": [
+        {
+          "condition": "Getting-started code example present",
+          "operator": "AND"
+        },
+        {
+          "condition": "Example is runnable without modification",
+          "operator": "AND"
+        }
+      ]
+    },
+    {
+      "rule_id": "BC-004",
+      "rule_name": "Error Codes OR Error Messages",
+      "description": "The document must include either a table of error codes OR inline error message descriptions for each endpoint. OR — either format is acceptable. Check for at least one.",
+      "example": null,
+      "category": "Completeness",
+      "is_autofail": false,
+      "points": 4,
+      "sub_conditions": [
+        {
+          "condition": "Table of error codes",
+          "operator": "OR"
+        },
+        {
+          "condition": "Inline error message descriptions",
+          "operator": "OR"
+        }
+      ]
+    },
+    {
+      "rule_id": "BC-005",
+      "rule_name": "Authentication via Header OR Query Param",
+      "description": "Authentication documentation must describe header-based auth OR query-parameter auth. OR — document at least one method.",
+      "example": null,
+      "category": "Completeness",
+      "is_autofail": false,
+      "points": 4,
+      "sub_conditions": [
+        {
+          "condition": "Header-based authentication described",
+          "operator": "OR"
+        },
+        {
+          "condition": "Query-parameter authentication described",
+          "operator": "OR"
+        }
+      ]
+    },
+    {
+      "rule_id": "BC-006",
+      "rule_name": "SDK Examples in Python AND JavaScript",
+      "description": "Code examples must be provided in both Python AND JavaScript. Other languages are optional. AND — both languages required. Missing either is auto-fail.",
+      "example": null,
+      "category": "Code Quality",
+      "is_autofail": true,
+      "points": 5,
+      "sub_conditions": [
+        {
+          "condition": "Python SDK example present",
+          "operator": "AND"
+        },
+        {
+          "condition": "JavaScript SDK example present",
+          "operator": "AND"
+        }
+      ]
+    },
+    {
+      "rule_id": "BC-007",
+      "rule_name": "Versioning Policy",
+      "description": "The document must state the versioning policy (semver, calver, or custom).",
+      "example": null,
+      "category": "Compliance",
+      "is_autofail": false,
+      "points": 2,
+      "sub_conditions": null
+    },
+    {
+      "rule_id": "BC-008",
+      "rule_name": "Rate Limiting Documented",
+      "description": "Rate limits must be documented with specific numbers (requests per minute or per hour).",
+      "example": null,
+      "category": "Completeness",
+      "is_autofail": false,
+      "points": 3,
+      "sub_conditions": null
+    },
+    {
+      "rule_id": "BC-009",
+      "rule_name": "Pagination Described",
+      "description": "If the API returns lists, pagination must be documented with cursor OR offset parameters. OR — either pagination style documented.",
+      "example": null,
+      "category": "Completeness",
+      "is_autofail": false,
+      "points": 3,
+      "sub_conditions": [
+        {
+          "condition": "Cursor parameters documented",
+          "operator": "OR"
+        },
+        {
+          "condition": "Offset parameters documented",
+          "operator": "OR"
+        }
+      ]
+    },
+    {
+      "rule_id": "BC-010",
+      "rule_name": "Webhook Events AND Retry Policy",
+      "description": "If webhooks are supported: event types must be listed AND retry/backoff policy must be described. AND — both required if webhooks exist. Skip if no webhooks.",
+      "example": null,
+      "category": "Completeness",
+      "is_autofail": false,
+      "points": 4,
+      "sub_conditions": [
+        {
+          "condition": "Webhook event types listed",
+          "operator": "AND"
+        },
+        {
+          "condition": "Retry/backoff policy described",
+          "operator": "AND"
+        }
+      ]
+    },
+    {
+      "rule_id": "BC-011",
+      "rule_name": "Search Functionality",
+      "description": "The documentation must include a search feature or index.",
+      "example": null,
+      "category": "Completeness",
+      "is_autofail": false,
+      "points": 2,
+      "sub_conditions": null
+    },
+    {
+      "rule_id": "BC-012",
+      "rule_name": "Response Schema Documented",
+      "description": "Every endpoint must have its response schema documented with field names AND types. AND — field names alone are insufficient.",
+      "example": null,
+      "category": "Completeness",
+      "is_autofail": false,
+      "points": 4,
+      "sub_conditions": [
+        {
+          "condition": "Response schema includes field names",
+          "operator": "AND"
+        },
+        {
+          "condition": "Response schema includes types",
+          "operator": "AND"
+        }
+      ]
+    }
+  ],
+  "source_file": "examples/rubrics/boolean_composite.csv",
+  "compiled_at": "2026-04-23T15:34:14.796693"
+}

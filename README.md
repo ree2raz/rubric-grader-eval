@@ -27,8 +27,11 @@ uv sync
 # Set your API key (default provider: Anthropic)
 export ANTHROPIC_API_KEY=your-key-here
 
-# Compile a rubric
+# Compile a rubric (calls LLM to extract rules from CSV)
 uv run python -m rubric_eval.compiler examples/rubrics/clean.csv > compiled_rubric.json
+
+# Or use the included pre-compiled rubric (no API key needed for eval)
+# cp examples/compiled/clean_compiled.json compiled_rubric.json
 
 # Evaluate a single document
 uv run python -m rubric_eval.evaluator examples/documents/doc_001.json compiled_rubric.json
@@ -67,36 +70,40 @@ This implements the "micro golden set" pattern: a small, hand-labeled reference 
 
 ## Sample Output
 
-Running the eval harness on all five example documents produces output like this:
+Running the eval harness on all five example documents produces:
 
 ```
 ======================================================================
 EVAL HARNESS RESULTS
 ======================================================================
 
-Overall accuracy: 0.813 (61/75)
+Overall accuracy: 0.8 (60/75)
 
-Category                   Prec    Rec     F1   TP   FP   FN
+Category                    Prec    Rec     F1   TP   FP   FN
 ------------------------------------------------------------
-Accuracy                   0.600  1.000  0.750    3    2    0
-Code Quality               0.667  1.000  0.800    4    2    0
-Completeness               0.818  0.900  0.857    9    2    1
-Compliance                 0.714  0.833  0.769    5    2    1
-Structure                  1.000  1.000  1.000    2    0    0
+Accuracy                   0.200  0.500  0.286    1    4    1
+Code Quality               1.000  0.500  0.667    1    0    1
+Completeness               0.786  1.000  0.880   11    3    0
+Compliance                 0.889  1.000  0.941    8    1    0
+Structure                  0.286  1.000  0.444    2    5    0
 
 Doc          Rule           System   Truth    Match
 --------------------------------------------------
 doc_001      STRUCT-001     pass     pass     yes
 doc_001      COMP-001       pass     pass     yes
-doc_001      COMPL-002      pass     pass     yes
+doc_001      ACC-002        fail     pass     NO
+doc_001      COMPL-003      fail     pass     NO
 doc_002      STRUCT-002     fail     fail     yes
 doc_002      CODE-002       fail     fail     yes
 doc_003      COMP-001       fail     fail     yes
-doc_003      COMPL-002      pass     fail     NO
+doc_003      CODE-003       pass     fail     NO
+doc_004      COMP-001       fail     pass     NO
+doc_005      COMP-003       fail     pass     NO
 ...
 
 ======================================================================
 ```
+
 
 The agreement table shows every verdict. Rows marked `NO` are where the system disagrees with the hand-labeled ground truth — these are the cases worth investigating when tuning prompts or switching models.
 

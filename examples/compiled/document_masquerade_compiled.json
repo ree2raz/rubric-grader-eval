@@ -1,0 +1,136 @@
+{
+  "rules": [
+    {
+      "rule_id": "S-1",
+      "rule_name": "Overview Section Present",
+      "description": "Overview or summary section is present and appears within the first page",
+      "example": null,
+      "category": "Structure",
+      "is_autofail": false,
+      "points": 5,
+      "sub_conditions": null
+    },
+    {
+      "rule_id": "S-2",
+      "rule_name": "Consistent Heading Levels",
+      "description": "Heading levels are consistent (no skipping from H1 to H3)",
+      "example": null,
+      "category": "Structure",
+      "is_autofail": false,
+      "points": 3,
+      "sub_conditions": null
+    },
+    {
+      "rule_id": "S-3",
+      "rule_name": "Navigation Aids Present",
+      "description": "Navigation aids (TOC or sidebar) present for documents exceeding 2000 words",
+      "example": null,
+      "category": "Structure",
+      "is_autofail": false,
+      "points": 3,
+      "sub_conditions": null
+    },
+    {
+      "rule_id": "C-1",
+      "rule_name": "Function Parameters Documented",
+      "description": "All function parameters include name and type",
+      "example": null,
+      "category": "Completeness",
+      "is_autofail": false,
+      "points": 5,
+      "sub_conditions": null
+    },
+    {
+      "rule_id": "C-2",
+      "rule_name": "Return Values Documented",
+      "description": "Return values documented with type description and edge cases",
+      "example": null,
+      "category": "Completeness",
+      "is_autofail": false,
+      "points": 5,
+      "sub_conditions": null
+    },
+    {
+      "rule_id": "C-3",
+      "rule_name": "Error Handling Documented",
+      "description": "Error handling section present with specific error types",
+      "example": null,
+      "category": "Completeness",
+      "is_autofail": false,
+      "points": 4,
+      "sub_conditions": null
+    },
+    {
+      "rule_id": "C-4",
+      "rule_name": "Authentication Requirements Described",
+      "description": "Authentication requirements fully described including token format and expiration",
+      "example": null,
+      "category": "Completeness",
+      "is_autofail": false,
+      "points": 4,
+      "sub_conditions": null
+    },
+    {
+      "rule_id": "E-1",
+      "rule_name": "Code Example for Each Feature",
+      "description": "At least one code example per major feature",
+      "example": null,
+      "category": "Code Quality",
+      "is_autofail": false,
+      "points": 5,
+      "sub_conditions": null
+    },
+    {
+      "rule_id": "E-2",
+      "rule_name": "Examples Syntactically Valid",
+      "description": "All examples are syntactically valid",
+      "example": null,
+      "category": "Code Quality",
+      "is_autofail": false,
+      "points": 4,
+      "sub_conditions": null
+    },
+    {
+      "rule_id": "E-3",
+      "rule_name": "Examples Tested Against Current Version",
+      "description": "Examples tested against current version",
+      "example": null,
+      "category": "Code Quality",
+      "is_autofail": false,
+      "points": 4,
+      "sub_conditions": null
+    },
+    {
+      "rule_id": "F-1",
+      "rule_name": "Undocumented Breaking Changes",
+      "description": "Undocumented breaking changes in current release (MANDATORY — any violation results in automatic rejection)",
+      "example": null,
+      "category": "Compliance",
+      "is_autofail": true,
+      "points": 5,
+      "sub_conditions": null
+    },
+    {
+      "rule_id": "F-2",
+      "rule_name": "Dead Links or Removed References",
+      "description": "Dead links or references to removed content",
+      "example": null,
+      "category": "Accuracy",
+      "is_autofail": true,
+      "points": 3,
+      "sub_conditions": null
+    },
+    {
+      "rule_id": "F-3",
+      "rule_name": "Version Numbers Mismatch",
+      "description": "Version numbers that do not match the current release",
+      "example": null,
+      "category": "Accuracy",
+      "is_autofail": true,
+      "points": 3,
+      "sub_conditions": null
+    }
+  ],
+  "source_file": "examples/rubrics/document_masquerade.csv",
+  "compiled_at": "2026-04-23T15:34:35.497424"
+}
