@@ -1,4 +1,4 @@
-# llm-rubric-eval
+# rubric-grader-eval
 
 This is a reference implementation demonstrating evaluation patterns for LLM rubric grading. It is intentionally minimal: synthetic data, hand-labeled golden set, visible failure modes. Use it as a skeleton for thinking about how to build and measure rubric-driven LLM systems in your domain.
 
