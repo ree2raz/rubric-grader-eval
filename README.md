@@ -27,15 +27,19 @@ Self-hosted inference is the default path. Cloud providers work too, but the arc
 uv sync
 
 # Start a local vLLM server with a mid-size model
-# Example: Qwen2.5-32B-Instruct at 4-bit, fits on a single A10G or L4
-vllm serve "Qwen/Qwen2.5-32B-Instruct" \
+# Example: Qwen3-14B-Instruct-AWQ at 4-bit, easily fits on a single 24GB GPU (A10G, L4, RTX 3090)
+vllm serve Qwen/Qwen3-14B-AWQ \
   --quantization awq \
-  --max-model-len 32768 \
-  --tensor-parallel-size 1
+  --max-model-len 8192 \
+  --gpu-memory-utilization 0.95 \
+  --max-num-seqs 32 \
+  --enforce-eager \
+  --host 0.0.0.0 \
+  --port 8000
 
 # In another terminal, set the endpoint
-export VLLM_BASE_URL=http://localhost:8000/v1
-export VLLM_MODEL=Qwen/Qwen2.5-32B-Instruct
+export VLLM_BASE_URL=http://localhost:8000/v1 # or remote GPU hostname
+export VLLM_MODEL=Qwen/Qwen3-14B-AWQ
 
 # Compile a rubric (calls LLM to extract rules from CSV)
 uv run python -m rubric_eval.compiler examples/rubrics/clean.csv --provider vllm > compiled_rubric.json

@@ -54,6 +54,10 @@ def _parse_chunk_evaluation(
 ) -> ChunkEvaluation:
     """Parse a single chunk evaluation from LLM output."""
     text = llm_output.strip()
+
+    if "</think>" in text:
+        text = text.split("</think>")[-1].strip()
+
     if text.startswith("```"):
         lines = text.split("\n")
         lines = [l for l in lines if not l.strip().startswith("```")]
@@ -68,6 +72,8 @@ def _parse_chunk_evaluation(
         ) from e
 
     data["chunk_index"] = chunk_index
+    if "verdict" in data and isinstance(data["verdict"], str):
+        data["verdict"] = data["verdict"].lower()
     if data.get("rule_id") != rule_id:
         data["rule_id"] = rule_id
 

@@ -38,7 +38,7 @@ class AgentAction(BaseModel):
     """One tool call the agent wants to make."""
 
     type: str = Field(
-        description="One of: get_document_metadata, list_sections, fetch_section, get_rule, submit_evaluation, finish"
+        description="One of: get_document_metadata, list_sections, fetch_section, get_rule, submit_evaluations, finish"
     )
     params: dict = Field(default_factory=dict)
 
@@ -61,6 +61,9 @@ class AgentState:
         self.submitted: dict[str, ChunkEvaluation] = {}
         self.read_sections: set[int] = set()
         self.finished = False
+        self.history: list[dict] = []
+        self.known_sections: list[dict] | None = None
+        self.known_rules: list[dict] | None = None
 
     def budget_remaining(self) -> int:
         return self.max_calls - self.call_count
@@ -99,6 +102,21 @@ def _build_state_message(state: AgentState) -> str:
     else:
         lines.append("All rules submitted.")
 
+    if state.known_sections:
+        lines.append("\n[MEMORY] Known Document Sections:")
+        lines.append(json.dumps(state.known_sections, indent=2))
+
+    if state.known_rules:
+        lines.append("\n[MEMORY] Known Rubric Rules:")
+        lines.append(json.dumps(state.known_rules, indent=2))
+
+    if state.history:
+        lines.append("\n--- CONVERSATION HISTORY ---")
+        for turn in state.history[-5:]: # Keep the last 5 turns to avoid blowing context
+            lines.append(f"Action: {turn['action']}")
+            lines.append(f"Result: {json.dumps(turn['result'], indent=2)}")
+        lines.append("-----------------------------")
+
     return "\n".join(lines)
 
 
@@ -117,49 +135,72 @@ def _execute_action(state: AgentState, action: AgentAction) -> dict:
         }
 
     if action_type == "list_sections":
-        return {
-            "sections": [
-                {"index": s.index, "heading": s.heading} for s in state.document.sections
-            ]
-        }
+        secs = [{"index": s.index, "heading": s.heading} for s in state.document.sections]
+        state.known_sections = secs
+        return {"sections": secs}
 
     if action_type == "fetch_section":
         idx = params.get("index")
         if idx is None:
             return {"error": "Missing 'index' param"}
+        try:
+            idx = int(idx)
+        except ValueError:
+            return {"error": f"Invalid 'index' param: {idx}. Must be an integer."}
         for s in state.document.sections:
             if s.index == idx:
                 state.read_sections.add(idx)
-                return {"index": s.index, "heading": s.heading, "content": s.content}
+                # Truncate content if it's absurdly long to prevent context blowouts,
+                # though realistically chunks should be manageable.
+                content = s.content
+                if len(content) > 4000:
+                    content = content[:4000] + "\n...[TRUNCATED]"
+                return {"index": s.index, "heading": s.heading, "content": content}
         return {"error": f"Section index {idx} not found"}
 
     if action_type == "get_rule":
         rule_id = params.get("rule_id")
         if rule_id is None:
-            return {"error": "Missing 'rule_id' param"}
+            # Return all rules if no specific rule_id requested
+            rules = [r.model_dump() for r in state.rubric.rules]
+            state.known_rules = rules
+            return {"rules": rules}
         for r in state.rubric.rules:
             if r.rule_id == rule_id:
                 return r.model_dump()
         return {"error": f"Rule {rule_id} not found"}
 
-    if action_type == "submit_evaluation":
-        rule_id = params.get("rule_id")
-        verdict = params.get("verdict")
-        evidence = params.get("evidence", "")
-        if rule_id is None or verdict is None:
-            return {"error": "Missing rule_id or verdict"}
-        if verdict not in ("pass", "fail"):
-            return {"error": f"Invalid verdict: {verdict}"}
+    if action_type == "submit_evaluations":
+        evals = params.get("evaluations", [])
+        if not isinstance(evals, list):
+            return {"error": "Missing or invalid 'evaluations' param. Must be a list."}
+        
+        results = []
+        for ev_data in evals:
+            rule_id = ev_data.get("rule_id")
+            verdict = ev_data.get("verdict")
+            if isinstance(verdict, str):
+                verdict = verdict.lower()
+            evidence = ev_data.get("evidence", "")
+            
+            if rule_id is None or verdict is None:
+                results.append({"rule_id": rule_id, "error": "Missing rule_id or verdict"})
+                continue
+            if verdict not in ("pass", "fail"):
+                results.append({"rule_id": rule_id, "error": f"Invalid verdict: {verdict}"})
+                continue
 
-        ev = ChunkEvaluation(
-            rule_id=rule_id,
-            chunk_index=-1,  # agent does not use chunks
-            verdict=verdict,
-            reasoning=state.call_count,  # placeholder: call count as proxy
-            evidence_quote=evidence,
-        )
-        state.submitted[rule_id] = ev
-        return {"status": "submitted", "rule_id": rule_id, "verdict": verdict}
+            ev = ChunkEvaluation(
+                rule_id=rule_id,
+                chunk_index=0,
+                verdict=verdict,
+                reasoning=str(state.call_count),  # placeholder: call count as string
+                evidence_quote=evidence,
+            )
+            state.submitted[rule_id] = ev
+            results.append({"rule_id": rule_id, "status": "submitted", "verdict": verdict})
+            
+        return {"status": "batch_submitted", "results": results}
 
     if action_type == "finish":
         state.finished = True
@@ -171,6 +212,10 @@ def _execute_action(state: AgentState, action: AgentAction) -> dict:
 def _parse_agent_response(llm_output: str) -> AgentResponse:
     """Parse the LLM's JSON output into an AgentResponse."""
     text = llm_output.strip()
+
+    if "</think>" in text:
+        text = text.split("</think>")[-1].strip()
+
     if text.startswith("```"):
         lines = text.split("\n")
         lines = [l for l in lines if not l.strip().startswith("```")]
@@ -222,12 +267,21 @@ def evaluate_document_agentic(
 
         try:
             response = _parse_agent_response(llm_output)
+            print(f"\n[Step {state.call_count}] THOUGHT: {response.thought}", file=sys.stderr)
+            print(f"[Step {state.call_count}] ACTION: {response.action.type}({response.action.params})", file=sys.stderr)
         except (ValueError, ValidationError) as e:
             print(f"  Warning: parse failed at step {state.call_count}: {e}", file=sys.stderr)
+            state.last_action_result = {
+                "error": f"Failed to parse your response: {e}. Please ensure you output valid JSON matching the schema."
+            }
             continue
 
         # Execute the action
         result = _execute_action(state, response.action)
+        state.history.append({
+            "action": f"{response.action.type}({response.action.params})",
+            "result": result
+        })
 
         # If agent tried to finish or submitted all rules, check
         if state.finished or state.all_rules_submitted():
@@ -243,7 +297,7 @@ def evaluate_document_agentic(
             evaluations.append(
                 ChunkEvaluation(
                     rule_id=rule.rule_id,
-                    chunk_index=-1,
+                    chunk_index=0,
                     verdict="fail",
                     reasoning="Agent did not submit an evaluation within budget",
                     evidence_quote="",

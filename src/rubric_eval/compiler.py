@@ -59,6 +59,10 @@ def _parse_rules(llm_output: str) -> list[Rule]:
     """
     text = llm_output.strip()
 
+    # Strip <think> blocks (often output by reasoning models)
+    if "</think>" in text:
+        text = text.split("</think>")[-1].strip()
+
     # Strip markdown code fencing if present
     if text.startswith("```"):
         lines = text.split("\n")

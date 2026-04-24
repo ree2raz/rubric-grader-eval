@@ -1,0 +1,26 @@
+{
+  "rules": [
+    {
+      "rule_id": "STRUCT-001",
+      "rule_name": "Overview Section Present",
+      "description": "The document must contain a clearly labeled overview or introduction section within the first two sections that describes what the documented system or API does.",
+      "example": "## Overview\nThis library provides a REST API for managing user accounts.",
+      "category": "Structure",
+      "is_autofail": false,
+      "points": 5,
+      "sub_conditions": null
+    },
+    {
+      "rule_id": "STRUCT-002",
+      "rule_name": "Table of Contents",
+      "description": "Documents with more than five sections must include a table of contents with links to each section heading.",
+      "example": "## Table of Contents\n- [Overview](#overview)\n- [Installation](#installation)",
+      "category": "Structure",
+      "is_autofail": false,
+      "points": 3,
+      "sub_conditions": null
+    }
+  ],
+  "source_file": "examples/rubrics/clean.csv",
+  "compiled_at": "2026-04-23T15:33:22.700092"
+}

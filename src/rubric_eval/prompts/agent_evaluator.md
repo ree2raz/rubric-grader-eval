@@ -8,11 +8,11 @@ You may call these tools by returning a JSON action:
 
 2. **list_sections** — Returns all section headings with their indices. Call this to understand document structure before deciding what to read.
 
-3. **fetch_section** `{"index": N}` — Returns the full content of section N. Use this to read specific sections relevant to a rule. Do not read sections blindly.
+3. **fetch_section** `{"index": 0}` — Returns the full content of section N. Use this to read specific sections relevant to a rule. Do not read sections blindly.
 
-4. **get_rule** `{"rule_id": "RULE-001"}` — Returns the full text of a specific rule. Use this when you need to re-read a rule's criteria before evaluating it.
+4. **get_rule** `{"rule_id": "RULE-001"}` (or `{}` to get all rules) — Returns the full text of a specific rule, or all rules if `rule_id` is omitted. Use this when you need to read the criteria before evaluating.
 
-5. **submit_evaluation** `{"rule_id": "RULE-001", "verdict": "pass" or "fail", "evidence": "verbatim quote from the document"}` — Submit your final verdict for a rule. Once submitted, you cannot change it. Evidence must be verbatim text from a section you have read.
+5. **submit_evaluations** `{"evaluations": [{"rule_id": "RULE-001", "verdict": "pass", "evidence": "quote"}, ...]}` — Submit verdicts for one or more rules at once. Once submitted, you cannot change them. Evidence must be verbatim text from a section you have read.
 
 6. **finish** — Ends the evaluation. Call this when all rules have been submitted or you cannot proceed further.
 
@@ -21,10 +21,12 @@ You may call these tools by returning a JSON action:
 You have a limited tool-call budget. Each tool call (including this reasoning step) counts. Your goal is to evaluate all rules with the fewest calls possible. A good strategy:
 
 1. Call `get_document_metadata` once.
-2. Call `list_sections` once.
-3. For each rule, decide which sections are relevant based on the rule description and section headings. Fetch only those sections.
-4. Submit the evaluation.
-5. Finish when done.
+2. Call `list_sections` once to get the document structure. NEVER call `list_sections` more than once.
+3. Call `get_rule` `{}` once to retrieve all rules. NEVER call `get_rule` more than once.
+4. Review the results of `list_sections` and `get_rule` from your state. Decide which specific sections are relevant to which rules.
+5. Use `fetch_section` to retrieve the full content of those specific sections.
+6. Use `submit_evaluations` to submit verdicts for as many rules as possible in a single tool call to save budget.
+7. Finish when done.
 
 ## Evaluation Criteria
 

@@ -2,12 +2,12 @@
 
 This document records a single evaluation run against `examples/documents/doc_001.json` using the pre-compiled rubric `examples/compiled/clean_compiled.json`.
 
-**Environment:** Local vLLM with Qwen2.5-32B-Instruct (AWQ 4-bit) on a single L4 GPU.
+**Environment:** Local vLLM with Qwen3-14B-Instruct-AWQ (AWQ 4-bit) on a single L4 GPU.
 **Command:**
 
 ```bash
 export VLLM_BASE_URL=http://localhost:8000/v1
-export VLLM_MODEL=Qwen/Qwen2.5-32B-Instruct
+export VLLM_MODEL=Qwen/Qwen3-14B-Instruct-AWQ
 time uv run python -m rubric_eval.evaluator examples/documents/doc_001.json examples/compiled/clean_compiled.json --provider vllm
 ```
 

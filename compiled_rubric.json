@@ -1,0 +1,156 @@
+{
+  "rules": [
+    {
+      "rule_id": "STRUCT-001",
+      "rule_name": "Overview Section Present",
+      "description": "The document must contain a clearly labeled overview or introduction section within the first two sections that describes what the documented system or API does.",
+      "example": "## Overview\nThis library provides a REST API for managing user accounts.",
+      "category": "Structure",
+      "is_autofail": false,
+      "points": 5,
+      "sub_conditions": null
+    },
+    {
+      "rule_id": "STRUCT-002",
+      "rule_name": "Table of Contents",
+      "description": "Documents with more than five sections must include a table of contents with links to each section heading.",
+      "example": "## Table of Contents\n- [Overview](#overview)\n- [Installation](#installation)",
+      "category": "Structure",
+      "is_autofail": false,
+      "points": 3,
+      "sub_conditions": null
+    },
+    {
+      "rule_id": "STRUCT-003",
+      "rule_name": "Consistent Heading Hierarchy",
+      "description": "Headings must follow a consistent hierarchy (H1 > H2 > H3). No skipped levels (e.g., H1 directly to H3).",
+      "example": "# Title\n## Section\n### Subsection is correct. # Title\n### Subsection is not.",
+      "category": "Structure",
+      "is_autofail": false,
+      "points": 3,
+      "sub_conditions": null
+    },
+    {
+      "rule_id": "COMP-001",
+      "rule_name": "All Parameters Documented",
+      "description": "Every public API endpoint or function must have all its parameters documented with name, type, and description.",
+      "example": "A function with parameters (name: str, age: int) must document both parameters.",
+      "category": "Completeness",
+      "is_autofail": false,
+      "points": 5,
+      "sub_conditions": null
+    },
+    {
+      "rule_id": "COMP-002",
+      "rule_name": "Return Values Described",
+      "description": "Every documented function or endpoint must describe its return value, including type and meaning.",
+      "example": "Returns: dict — A dictionary containing the user profile with keys 'name', 'email', and 'role'.",
+      "category": "Completeness",
+      "is_autofail": false,
+      "points": 5,
+      "sub_conditions": null
+    },
+    {
+      "rule_id": "COMP-003",
+      "rule_name": "Error Handling Documented",
+      "description": "The document must describe error cases, including error codes or exception types and their meanings.",
+      "example": "Raises ValueError if the input is negative. Returns 404 if the resource is not found.",
+      "category": "Completeness",
+      "is_autofail": false,
+      "points": 4,
+      "sub_conditions": null
+    },
+    {
+      "rule_id": "COMP-004",
+      "rule_name": "Authentication Documented",
+      "description": "If the API requires authentication, the document must describe the authentication method, required headers, and token format.",
+      "example": "Include an Authorization header with a Bearer token: Authorization: Bearer <token>.",
+      "category": "Completeness",
+      "is_autofail": false,
+      "points": 4,
+      "sub_conditions": null
+    },
+    {
+      "rule_id": "CODE-001",
+      "rule_name": "Code Examples Present",
+      "description": "The document must include at least one runnable code example demonstrating basic usage.",
+      "example": "```python\nimport mylib\nresult = mylib.process(data)\nprint(result)\n```",
+      "category": "Code Quality",
+      "is_autofail": false,
+      "points": 5,
+      "sub_conditions": null
+    },
+    {
+      "rule_id": "CODE-002",
+      "rule_name": "Examples Are Syntactically Valid",
+      "description": "All code examples must be syntactically valid in their stated language. Pseudocode must be explicitly labeled as such.",
+      "example": "Unlabeled pseudocode like 'do_thing(x) -> result' without language specification fails this rule.",
+      "category": "Code Quality",
+      "is_autofail": false,
+      "points": 4,
+      "sub_conditions": null
+    },
+    {
+      "rule_id": "CODE-003",
+      "rule_name": "Examples Match Current API",
+      "description": "Code examples must use the current API surface. Deprecated methods, removed parameters, or old endpoints cause a failure.",
+      "example": "Using v1/users when the current API is v2/users fails this rule.",
+      "category": "Code Quality",
+      "is_autofail": false,
+      "points": 4,
+      "sub_conditions": null
+    },
+    {
+      "rule_id": "ACC-001",
+      "rule_name": "Version Numbers Current",
+      "description": "All version numbers mentioned in the document must match the current release. Stale version references fail.",
+      "example": "Referring to v2.1.0 when the current version is v3.0.0 fails.",
+      "category": "Accuracy",
+      "is_autofail": false,
+      "points": 3,
+      "sub_conditions": null
+    },
+    {
+      "rule_id": "ACC-002",
+      "rule_name": "Links Resolve",
+      "description": "All internal and external links must resolve. Broken links fail. Placeholder links (e.g., example.com) are acceptable only if explicitly labeled.",
+      "example": "[API Reference](/api) must link to an existing page.",
+      "category": "Accuracy",
+      "is_autofail": false,
+      "points": 3,
+      "sub_conditions": null
+    },
+    {
+      "rule_id": "COMPL-001",
+      "rule_name": "License Section Present",
+      "description": "The document must include a license section or link to the project license file.",
+      "example": "## License\nThis project is licensed under the Apache 2.0 License.",
+      "category": "Compliance",
+      "is_autofail": false,
+      "points": 2,
+      "sub_conditions": null
+    },
+    {
+      "rule_id": "COMPL-002",
+      "rule_name": "Changelog for Breaking Changes",
+      "description": "Any breaking change must have a corresponding changelog entry. Missing changelog entries for breaking changes are an auto-fail.",
+      "example": "## Changelog\n### v3.0.0\n- BREAKING: Removed legacy /v1 endpoints.",
+      "category": "Compliance",
+      "is_autofail": true,
+      "points": 5,
+      "sub_conditions": null
+    },
+    {
+      "rule_id": "COMPL-003",
+      "rule_name": "Deprecation Notices",
+      "description": "Deprecated features must be explicitly marked with a deprecation notice including the version when deprecation occurred and the recommended replacement.",
+      "example": ".. deprecated:: 2.0\n   Use `new_function()` instead.",
+      "category": "Compliance",
+      "is_autofail": false,
+      "points": 3,
+      "sub_conditions": null
+    }
+  ],
+  "source_file": "examples/rubrics/clean.csv",
+  "compiled_at": "2026-04-24T21:47:31.692017"
+}
