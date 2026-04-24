@@ -1,72 +1,99 @@
-# rubric-grader-eval
+# llm-rubric-eval
 
-This is a reference implementation demonstrating evaluation patterns for LLM rubric grading. It is intentionally minimal: synthetic data, hand-labeled golden set, visible failure modes. Use it as a skeleton for thinking about how to build and measure rubric-driven LLM systems in your domain.
+A reference implementation demonstrating how to compile rubrics from unstructured documents and evaluate them with LLMs. The compiler is the hard part. The eval harness measures whether the compiler worked.
 
 ## What this is
 
-A two-stage pipeline and eval harness:
+A three-stage pipeline:
 
-1. **Compile**: Take a rubric in any format (clean CSV, composite-annotated spreadsheet, broken PDF-export) and extract structured rules via LLM.
-2. **Evaluate**: Run every rule against every chunk of a document. Brute force. One LLM call per chunk-rule pair.
-3. **Measure**: Compare system verdicts against hand-labeled ground truth. Per-category precision, recall, F1. Per-rule agreement table.
+1. **Compile**: Take a rubric in any format (clean CSV, composite-annotated spreadsheet, broken PDF-export masquerading as a spreadsheet) and extract structured rules via LLM. This is the most carefully tuned component.
+2. **Evaluate**: Run rules against documents. Two modes: brute-force (every rule against every chunk) and agentic (targeted tool use, the agent decides what to read).
+3. **Measure**: Compare system verdicts against hand-labeled ground truth. Per-category precision, recall, F1. Side-by-side brute vs agent comparison.
 
-The eval harness is the point. The compiler and evaluator demonstrate the pattern. The harness tells you whether the pattern works.
+The compiler is the point. Rubrics live in spreadsheets, PDFs, and SME heads. No standard format. No API. The hard work is getting them into a machine-readable schema that captures composite logic. The evaluator and harness tell you whether that compilation produced rules that can be evaluated correctly.
 
 ## What this is not
 
 - **Not a product.** Synthetic data, no optimizations, no production error handling.
-- **Not the 2026 architecture.** The blog post describes an agentic rebuild with tool use, budget-aware routing, and eval-driven prompt optimization. This repo does none of that. For that pattern, see [RegTriage](https://github.com/ree2raz/RegTriage-OpenEnv).
-- **Not optimized.** The evaluator runs every rule on every chunk. A rule checking for an overview section evaluates the changelog. This is the part to fix first — the repo makes the cost visible so you can measure the improvement when you do.
+- **Not the 2026 architecture.** The blog post describes an agentic rebuild with budget-aware routing and eval-driven prompt optimization. For that pattern, see [RegTriage](https://github.com/ree2raz/RegTriage-OpenEnv).
+- **Not optimized.** The brute-force evaluator is intentionally inefficient. It runs every rule on every chunk so you can measure the delta when you switch to the agentic mode.
 
-## Quickstart
+## Quickstart (local vLLM)
+
+Self-hosted inference is the default path. Cloud providers work too, but the architecture assumes on-prem deployment.
 
 ```bash
 # Install dependencies
 uv sync
 
-# Set your API key (default provider: Anthropic)
-export ANTHROPIC_API_KEY=your-key-here
+# Start a local vLLM server with a mid-size model
+# Example: Qwen2.5-32B-Instruct at 4-bit, fits on a single A10G or L4
+vllm serve "Qwen/Qwen2.5-32B-Instruct" \
+  --quantization awq \
+  --max-model-len 32768 \
+  --tensor-parallel-size 1
+
+# In another terminal, set the endpoint
+export VLLM_BASE_URL=http://localhost:8000/v1
+export VLLM_MODEL=Qwen/Qwen2.5-32B-Instruct
 
 # Compile a rubric (calls LLM to extract rules from CSV)
-uv run python -m rubric_eval.compiler examples/rubrics/clean.csv > compiled_rubric.json
+uv run python -m rubric_eval.compiler examples/rubrics/clean.csv --provider vllm > compiled_rubric.json
 
 # Or use the included pre-compiled rubric (no API key needed for eval)
 # cp examples/compiled/clean_compiled.json compiled_rubric.json
 
-# Evaluate a single document
-uv run python -m rubric_eval.evaluator examples/documents/doc_001.json compiled_rubric.json
+# Evaluate a single document (brute-force mode)
+uv run python -m rubric_eval.evaluator examples/documents/doc_001.json compiled_rubric.json --provider vllm
 
 # Run the eval harness against the golden set
-uv run python -m rubric_eval.eval examples/documents/ compiled_rubric.json
+uv run python -m rubric_eval.eval examples/documents/ compiled_rubric.json --provider vllm
+
+# Compare brute-force vs agentic evaluation
+uv run python -m rubric_eval.eval examples/documents/ compiled_rubric.json --provider vllm --mode compare
 ```
 
-Other providers:
+### Cloud providers (fallback)
 
 ```bash
-# OpenAI
-export OPENAI_API_KEY=your-key
-uv run python -m rubric_eval.compiler examples/rubrics/clean.csv --provider openai
+# Anthropic
+export ANTHROPIC_API_KEY=***
+uv run python -m rubric_eval.compiler examples/rubrics/clean.csv --provider anthropic
 
-# Local vLLM
-export VLLM_BASE_URL=http://localhost:8000/v1
-uv run python -m rubric_eval.compiler examples/rubrics/clean.csv --provider vllm
+# OpenAI
+export OPENAI_API_KEY=***
+uv run python -m rubric_eval.compiler examples/rubrics/clean.csv --provider openai
 ```
 
-## Architecture
+## Compiler: the hard part
 
-**Stage 1 — Compilation.** The compiler reads a rubric file as raw text (not as a structured CSV — some of these files are not valid CSVs). It sends the raw content to an LLM with a prompt that handles three variance patterns: multi-condition rules that need expansion, boolean composites encoded in comment cells, and broken documents masquerading as spreadsheets. The LLM output is validated against a Pydantic schema. Invalid output raises immediately — it does not get silently accepted downstream.
+Rubric compilation is where most projects fail. The input is not structured data. It is a spreadsheet with merged cells, a PDF scan of a printed table, or a CSV exported from a document that was never valid CSV. The compiler handles three variance patterns:
 
-**Stage 2 — Evaluation.** The evaluator concatenates document sections, chunks by token count (1024 tokens, configurable), and runs every rule against every chunk. One LLM call per pair. The prompt asks for a verdict (pass/fail), reasoning, and a verbatim evidence quote. Results are aggregated: if any chunk passes a rule, the document-level verdict for that rule is "pass."
+- **Clean CSVs**: Well-formed rubrics with standard columns. Extracted directly.
+- **Boolean composites**: Rules encoded in comment cells with AND/OR logic. Expanded into structured sub-conditions.
+- **Document masquerades**: PDF exports or broken documents pretending to be spreadsheets. Parsed as raw text, then extracted.
 
-## Eval Harness
+The output is validated Pydantic JSON with rule identity, pass/fail criteria, severity semantics, and composite logic preserved. Invalid output raises immediately. It does not get silently accepted downstream.
 
-The eval harness (`eval.py`) is the part worth studying. It loads documents with hand-labeled ground truth, runs the evaluator, and compares:
+The compilation prompt lives in `src/rubric_eval/prompts/compile_rubric.md`. It is the most carefully tuned artifact in the repo.
 
-- **Per-category metrics**: Precision, recall, F1 for each rule category (Structure, Completeness, Code Quality, Accuracy, Compliance)
-- **Overall accuracy**: Fraction of rule verdicts matching ground truth
-- **Agreement table**: Per-rule, per-document comparison showing exactly where the system agrees and disagrees with human judgment
+## Evaluator: two modes
 
-This implements the "micro golden set" pattern: a small, hand-labeled reference set that tells you whether your system is improving or regressing when you change prompts, models, or chunking strategies.
+### Brute-force mode
+
+Every rule runs against every chunk of the document. One LLM call per pair. Predictable, correct, and wasteful. This is the baseline you ship first.
+
+### Agentic mode
+
+A single agent with targeted tools decides what to read. Tools: `get_document_metadata`, `list_sections`, `fetch_section`, `get_rule`, `submit_evaluation`. The agent budgets its tool calls and stops when all rules are evaluated. This is the rebuild you measure against.
+
+Run the comparison:
+
+```bash
+uv run python -m rubric_eval.eval examples/documents/ compiled_rubric.json --mode compare
+```
+
+This produces a side-by-side table: calls, estimated cost, accuracy, and per-category F1 for both modes on the same documents.
 
 ## Sample Output
 
@@ -77,7 +104,7 @@ Running the eval harness on all five example documents produces:
 EVAL HARNESS RESULTS
 ======================================================================
 
-Overall accuracy: 0.8 (60/75)
+Document: doc_001 | Calls: 45 | Accuracy: 0.800 | Avg F1: 0.600
 
 Category                    Prec    Rec     F1   TP   FP   FN
 ------------------------------------------------------------
@@ -93,31 +120,73 @@ doc_001      STRUCT-001     pass     pass     yes
 doc_001      COMP-001       pass     pass     yes
 doc_001      ACC-002        fail     pass     NO
 doc_001      COMPL-003      fail     pass     NO
-doc_002      STRUCT-002     fail     fail     yes
-doc_002      CODE-002       fail     fail     yes
-doc_003      COMP-001       fail     fail     yes
-doc_003      CODE-003       pass     fail     NO
-doc_004      COMP-001       fail     pass     NO
-doc_005      COMP-003       fail     pass     NO
 ...
 
 ======================================================================
 ```
 
+### Reading the metrics
 
-The agreement table shows every verdict. Rows marked `NO` are where the system disagrees with the hand-labeled ground truth — these are the cases worth investigating when tuning prompts or switching models.
+The numbers are not good. They are honest. Every degraded category maps to a known failure mode that was documented before the first eval run, not discovered after:
+
+- **Accuracy F1 0.286**: Two failure modes. First, link-resolution rules (ACC-002) fail when links in the document are broken or relative. Second, version-number rules (ACC-001) fail when the document does not explicitly state a version. Both are known limitations of evaluating static documents without external lookups.
+
+- **Structure F1 0.444**: Heading-hierarchy rules (STRUCT-003) are evaluated per-chunk. A chunk may contain a heading jump that is resolved in a later chunk. The brute-force evaluator has no cross-chunk memory. This is the multi-condition-spanning-chunks failure mode.
+
+- **Code Quality F1 0.667**: Syntax-validation rules (CODE-002) depend on the LLM's ability to parse code examples. Some examples are pseudo-code or shell commands that do not have strict syntax. The LLM is conservative and marks them as failing. This is the low-quality-source-text failure mode applied to code.
+
+The Completeness and Compliance categories score well because their rules (parameter documentation, error handling, license presence) are locally verifiable within a single chunk. The gap between high and low categories is exactly the gap between "can be verified locally" and "requires cross-section or external context."
+
+A full recorded run with per-document breakdown is in [`docs/sample_run.md`](./docs/sample_run.md).
+
+## Architecture
+
+```
+CSV rubric → [compiler.py] → compiled JSON rules
+                                      ↓
+                         ┌────────────┴────────────┐
+                         ↓                         ↓
+              [evaluator.py: brute]      [agent_evaluator.py: targeted]
+                         ↓                         ↓
+                         └────────────┬────────────┘
+                                      ↓
+                              [eval.py: compare]
+                                      ↓
+                         per-category precision/recall/F1
+```
+
+- **compiler.py**: Reads rubric as raw text, sends to LLM, validates output via Pydantic. Handles three variance cases.
+- **evaluator.py**: Brute-force. Chunks document by 1024 tokens. Every rule x every chunk = one LLM call each.
+- **agent_evaluator.py**: Agentic. Single agent loop with tool budget. Decides which sections to read.
+- **eval.py**: Loads golden-set documents, runs evaluator(s), compares to ground truth, prints metrics.
+- **llm.py**: Provider factory. Anthropic, OpenAI, vLLM. Unified interface.
+- **models.py**: Pydantic v2 models. All LLM output is validated here.
+
+## Brute-force vs agentic: the architectural contrast
+
+| Dimension | Brute-force (rubric-grader-eval) | Agentic (RegTriage) |
+|---|---|---|
+| Reads per document | Every section, every rule | Targeted: agent decides |
+| LLM calls per doc (15 rules, ~5 sections) | ~75 | ~12-20 |
+| Cross-section memory | None (per-chunk evaluation) | Yes (agent retains state) |
+| Composite rule handling | Per-chunk only | Can aggregate across sections |
+| Failure mode: relevance | Evaluates irrelevant sections | Skips irrelevant sections |
+| Failure mode: debugging | Easy (deterministic loop) | Hard (conditional decisions) |
+| When to use | Baseline, production ship | Optimization, research |
+
+The brute-force pattern is what you ship first. The agentic pattern is what you rebuild toward. Both are in this repo. The comparison mode measures the delta.
 
 ## Limitations
 
 Four known failure modes, documented here because shipping with honest limitations is more useful than hiding them:
 
-1. **Multi-condition rules spanning chunks.** A rule requiring multiple conditions (e.g., "overview AND changelog present") can only evaluate whether both appear in the same chunk. If they appear in different chunks, neither chunk evaluation sees the full picture. The system has no cross-chunk aggregation for composite rules.
+1. **Multi-condition rules spanning chunks.** A rule requiring multiple conditions can only evaluate whether they appear in the same chunk. No cross-chunk aggregation.
 
-2. **Linear scaling.** Evaluation time is proportional to document length × rule count. A 20-section document with 15 rules and 4 chunks generates 60 LLM calls. Longer documents or larger rubrics scale accordingly. No relevance filtering reduces this.
+2. **Linear scaling.** Brute-force evaluation time is proportional to document length x rule count. The agentic mode reduces this but adds complexity.
 
-3. **Low-quality source text.** If the document text is garbled (OCR artifacts, encoding errors, truncated content), the LLM evaluates garbage and produces garbage output. No quality filter gates the input.
+3. **Low-quality source text.** OCR artifacts, encoding errors, or truncated content produce garbage output. No quality filter gates the input.
 
-4. **No relevance routing.** Every rule runs on every chunk regardless of whether the chunk could possibly be relevant. A "license section present" rule evaluates the code examples section. This wastes compute and is the easiest failure mode to fix — an embedding-based router would cut inference load significantly.
+4. **No relevance routing in brute mode.** Every rule runs on every chunk regardless of relevance. The agentic mode fixes this but introduces its own failure modes (wrong section selection, budget exhaustion before all rules are evaluated).
 
 ## Background Reading
 
