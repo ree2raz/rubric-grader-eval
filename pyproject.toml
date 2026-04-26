@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "llm-rubric-eval"
+name = "rubric-grader-eval"
 version = "0.1.0"
 description = "Reference implementation: eval harness for rubric-driven LLM grading systems"
 readme = "README.md"
@@ -38,7 +38,7 @@ dev = [
 ]
 
 [project.urls]
-Repository = "https://github.com/ree2raz/llm-rubric-eval"
+Repository = "https://github.com/ree2raz/rubric-grader-eval"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/rubric_eval"]

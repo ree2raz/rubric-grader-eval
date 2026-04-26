@@ -1,5 +1,5 @@
 """
-llm-rubric-eval: A reference pattern for compiling unstructured rubrics into
+rubric-grader-eval: A reference pattern for compiling unstructured rubrics into
 machine-readable schemas, then evaluating documents against them.
 
 The compiler is the artifact — handles clean CSV, boolean composites, and

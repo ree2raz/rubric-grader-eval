@@ -1,4 +1,4 @@
-# llm-rubric-eval
+# rubric-grader-eval
 
 A reference pattern for compiling unstructured rubrics into machine-readable schemas, then evaluating documents against them with golden-set ground truth.
 

@@ -314,7 +314,7 @@ wheels = [
 ]
 
 [[package]]
-name = "llm-rubric-eval"
+name = "rubric-grader-eval"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [

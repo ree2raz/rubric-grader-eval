@@ -1,4 +1,4 @@
-# Agent Instructions for llm-rubric-eval
+# Agent Instructions for rubric-grader-eval
 
 ## What This Repo Is
 
