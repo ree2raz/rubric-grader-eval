@@ -166,7 +166,7 @@ Output is a `DocumentEvaluation`: a list of per-chunk per-rule verdicts with ver
 
 ## Eval harness
 
-Loads golden-set documents (each with hand-labeled `ground_truth` arrays), runs the evaluator, and prints per-category precision/recall/F1 plus a per-rule agreement table.
+Loads golden-set documents (each with hand-labeled `ground_truth` arrays), runs the evaluator, and prints per-category macro-F1 (averaged across both pass and fail classes) plus a per-rule agreement table.
 
 Two modes:
 
@@ -190,15 +190,15 @@ Running the eval harness on all five example documents produces:
 EVAL HARNESS RESULTS
 ======================================================================
 
-Document: doc_001 | Calls: 45 | Accuracy: 0.800 | Avg F1: 0.600
+Document: doc_001 | Calls: 45 | Accuracy: 0.933 | Avg F1: 0.480
 
-Category                    Prec    Rec     F1   TP   FP   FN
+Category                   MacroF1   FailF1   PassF1   TP   FP   FN
 ------------------------------------------------------------
-Accuracy                   0.200  0.500  0.286    1    4    1
-Code Quality               1.000  0.500  0.667    1    0    1
-Completeness               0.786  1.000  0.880   11    3    0
-Compliance                 0.889  1.000  0.941    8    1    0
-Structure                  0.286  1.000  0.444    2    5    0
+Accuracy                     0.500    0.000    1.000    0    0    0
+Code Quality                 0.500    0.000    1.000    0    0    0
+Completeness                 0.500    0.000    1.000    0    0    0
+Compliance                   0.400    0.000    0.800    0    1    0
+Structure                    0.500    0.000    1.000    0    0    0
 
 Doc          Rule           System   Truth    Match
 --------------------------------------------------
@@ -213,15 +213,17 @@ doc_001      COMPL-003      fail     pass     NO
 
 ### Reading the metrics
 
+**MacroF1** is the key number — it averages F1 across both classes (pass and fail). A category where all rules pass and the system agrees gets a high PassF1 but FailF1 0.0 (no failures to detect). A category with mixed verdicts shows meaningful FailF1 and PassF1, and the macro average surfaces the balance.
+
 The numbers are not good. They are honest. Every degraded category maps to a known failure mode documented below:
 
-- **Accuracy F1 0.286**: Link-resolution rules (ACC-002) fail when links in the document are broken or relative. Version-number rules (ACC-001) fail when the document does not explicitly state a version.
+- **Structure FailF1 0.0, PassF1 1.0**: The system correctly confirms passes but never detects failures because the rules that fail (heading hierarchy) require cross-chunk reasoning. The evaluator has no cross-chunk memory. This is the multi-condition-spanning-chunks failure mode.
 
-- **Structure F1 0.444**: Heading-hierarchy rules (STRUCT-003) are evaluated per-chunk. A chunk may contain a heading jump that is resolved in a later chunk. The evaluator has no cross-chunk memory.
+- **Code Quality FailF1 0.0, PassF1 0.8-1.0**: Syntax-validation rules (CODE-002) depend on the LLM's ability to parse code examples. Some examples are pseudo-code or shell commands that do not have strict syntax. The LLM is conservative and marks them as failing. This is the low-quality-source-text failure mode applied to code.
 
-- **Code Quality F1 0.667**: Syntax-validation rules (CODE-002) depend on the LLM's ability to parse code examples. Some examples are pseudo-code or shell commands that do not have strict syntax.
+- **Accuracy FailF1 0.0**: Link-resolution rules (ACC-002) and version-number rules (ACC-001) fail when links are broken or versions are implicit. Both are known limitations of evaluating static documents without external lookups.
 
-The Completeness and Compliance categories score well because their rules (parameter documentation, error handling, license presence) are locally verifiable within a single chunk. The gap between high and low categories is exactly the gap between "can be verified locally" and "requires cross-section or external context."
+The Completeness and Compliance categories score consistently because their rules (parameter documentation, error handling, license presence) are locally verifiable within a single chunk. The gap between high and low categories is exactly the gap between "can be verified locally" and "requires cross-section or external context."
 
 ## Architecture
 
@@ -231,7 +233,7 @@ CSV rubric → [compiler.py] → compiled JSON rules → [evaluator.py] → chun
 
 - **compiler.py**: Reads rubric as raw text, sends to LLM, validates output via Pydantic. Handles three variance cases in one prompt. The most carefully tuned component.
 - **evaluator.py**: Brute-force. Chunks document by 1024 tokens. Every rule × every chunk = one LLM call. Intentionally inefficient.
-- **eval.py**: Golden-set comparison. Loads documents with `ground_truth` labels, runs evaluator (or loads pre-computed verdicts), computes per-category precision/recall/F1 and per-rule agreement tables.
+- **eval.py**: Golden-set comparison. Loads documents with `ground_truth` labels, runs evaluator (or loads pre-computed verdicts), computes per-category macro-averaged F1 and per-rule agreement tables.
 - **llm.py**: Provider factory. Anthropic, OpenAI, vLLM. Unified `complete(system, user) -> str` interface.
 - **models.py**: Pydantic v2 models. All LLM output is validated here. Invalid output raises.
 

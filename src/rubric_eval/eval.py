@@ -44,8 +44,15 @@ def _aggregate_verdicts(
 def _compute_metrics(
     comparisons: list[dict],
 ) -> dict:
-    """Compute precision, recall, F1 per category and overall accuracy."""
-    categories: dict[str, dict[str, int]] = defaultdict(
+    """Compute macro-averaged precision, recall, F1 per category and overall accuracy.
+
+    Macro F1 averages the F1 score for both classes (pass and fail) so that
+    a document where all ground truth is "pass" and the system agrees does not
+    produce a misleading 0.0 F1.
+    """
+    # Counts for fail-as-positive (what the system catches) and pass-as-positive
+    CatCounts = dict[str, int]
+    fail_counts: dict[str, CatCounts] = defaultdict(
         lambda: {"tp": 0, "fp": 0, "fn": 0, "tn": 0}
     )
     total_match = 0
@@ -55,43 +62,54 @@ def _compute_metrics(
         cat = c["category"]
         sys_v = c["system_verdict"]
         gt_v = c["ground_truth_verdict"]
-        match = sys_v == gt_v
 
-        if match:
+        if sys_v == gt_v:
             total_match += 1
         total_count += 1
 
         if gt_v == "fail" and sys_v == "fail":
-            categories[cat]["tp"] += 1
+            fail_counts[cat]["tp"] += 1
         elif gt_v == "pass" and sys_v == "fail":
-            categories[cat]["fp"] += 1
+            fail_counts[cat]["fp"] += 1
         elif gt_v == "fail" and sys_v == "pass":
-            categories[cat]["fn"] += 1
+            fail_counts[cat]["fn"] += 1
         else:
-            categories[cat]["tn"] += 1
+            fail_counts[cat]["tn"] += 1
 
-    category_metrics = {}
-    for cat, stats in sorted(categories.items()):
-        tp, fp, fn = stats["tp"], stats["fp"], stats["fn"]
+    def _f1(tp: int, fp: int, fn: int) -> float:
         precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
         recall = tp / (tp + fn) if (tp + fn) > 0 else 0.0
-        f1 = (
+        return (
             2 * precision * recall / (precision + recall)
             if (precision + recall) > 0
             else 0.0
         )
+
+    category_metrics = {}
+    for cat, fc in sorted(fail_counts.items()):
+        fail_tp, fail_fp, fail_fn = fc["tp"], fc["fp"], fc["fn"]
+        fail_f1 = _f1(fail_tp, fail_fp, fail_fn)
+
+        # Pass-as-positive: flip the confusion matrix
+        pass_tp = fc["tn"]  # both correct on pass
+        pass_fp = fc["fn"]  # system pass, truth fail
+        pass_fn = fc["fp"]  # system fail, truth pass
+        pass_f1 = _f1(pass_tp, pass_fp, pass_fn)
+
+        macro_f1 = round((fail_f1 + pass_f1) / 2.0, 3) if (fail_f1 + pass_f1) > 0 else 0.0
+
         category_metrics[cat] = {
-            "precision": round(precision, 3),
-            "recall": round(recall, 3),
-            "f1": round(f1, 3),
-            "tp": tp,
-            "fp": fp,
-            "fn": fn,
+            "macro_f1": macro_f1,
+            "fail_f1": round(fail_f1, 3),
+            "pass_f1": round(pass_f1, 3),
+            "tp": fail_tp,
+            "fp": fail_fp,
+            "fn": fail_fn,
         }
 
     overall_accuracy = round(total_match / total_count, 3) if total_count > 0 else 0.0
     avg_f1 = round(
-        sum(m["f1"] for m in category_metrics.values()) / len(category_metrics), 3
+        sum(m["macro_f1"] for m in category_metrics.values()) / len(category_metrics), 3
     ) if category_metrics else 0.0
 
     return {
@@ -257,13 +275,13 @@ def _print_results(results: list[dict]) -> None:
         )
 
         print(
-            f"\n{'Category':<25} {'Prec':>6} {'Rec':>6} {'F1':>6} {'TP':>4} {'FP':>4} {'FN':>4}"
+            f"\n{'Category':<25} {'MacroF1':>8} {'FailF1':>8} {'PassF1':>8} {'TP':>4} {'FP':>4} {'FN':>4}"
         )
         print("-" * 60)
         for cat, m in sorted(r.get("category_metrics", {}).items()):
             print(
-                f"{cat:<25} {m['precision']:>6.3f} {m['recall']:>6.3f} "
-                f"{m['f1']:>6.3f} {m['tp']:>4} {m['fp']:>4} {m['fn']:>4}"
+                f"{cat:<25} {m['macro_f1']:>8.3f} {m['fail_f1']:>8.3f} "
+                f"{m['pass_f1']:>8.3f} {m['tp']:>4} {m['fp']:>4} {m['fn']:>4}"
             )
 
         print(
