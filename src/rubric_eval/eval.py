@@ -1,18 +1,14 @@
 """
 Eval harness: compare system verdicts against a hand-labeled golden set.
 
-Supports three modes:
-- brute: run the brute-force evaluator (every rule x every chunk)
-- agent: run the agentic evaluator (targeted tool use)
-- compare: run both and print a side-by-side table
+Runs the brute-force evaluator against golden-set documents, then computes
+per-category precision/recall/F1 and a per-rule agreement table. Supports
+an optional --pre-evaluated flag that loads pre-computed verdicts from disk,
+skipping LLM calls entirely — the harness becomes a pure metrics calculator.
 
 This is the centerpiece of the repo. The blog post says an eval harness
 with a golden set should have been built first, not last. This module
 makes that pattern concrete.
-
-Metrics: per-category precision/recall/F1, overall accuracy, per-rule
-agreement table. In compare mode: calls, estimated cost, and F1 across
-both evaluators.
 """
 
 from __future__ import annotations
@@ -23,15 +19,9 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-from rubric_eval.agent_evaluator import evaluate_document_agentic
 from rubric_eval.evaluator import evaluate_document
 from rubric_eval.llm import get_llm_client
-from rubric_eval.models import CompiledRubric, Document
-
-# Rough cost estimate per LLM call for comparison purposes.
-# Based on ~2K input tokens + ~200 output tokens at mid-tier API rates.
-# This is an order-of-magnitude estimate, not a precise invoice.
-_COST_PER_CALL = 0.003
+from rubric_eval.models import CompiledRubric, Document, DocumentEvaluation
 
 
 def _aggregate_verdicts(
@@ -113,13 +103,12 @@ def _compute_metrics(
     }
 
 
-def _run_single_mode(
+def _evaluate_with_llm(
     doc_dir: str,
     rubric_path: str,
     provider: str | None,
-    mode: str,
 ) -> list[dict]:
-    """Run one evaluator mode on all documents and return per-doc results."""
+    """Run the brute-force evaluator against all golden-set documents."""
     client = get_llm_client(provider)
 
     rubric_data = json.loads(Path(rubric_path).read_text(encoding="utf-8"))
@@ -138,10 +127,7 @@ def _run_single_mode(
         if not document.ground_truth:
             continue
 
-        if mode == "agent":
-            result = evaluate_document_agentic(document, rubric, client=client)
-        else:
-            result = evaluate_document(document, rubric, client=client)
+        result = evaluate_document(document, rubric, client=client)
 
         system_verdicts = _aggregate_verdicts(result.evaluations)
 
@@ -161,8 +147,74 @@ def _run_single_mode(
         metrics = _compute_metrics(comparisons)
         results.append({
             "doc_id": document.doc_id,
-            "mode": mode,
             "calls": result.total_llm_calls,
+            "accuracy": metrics["overall_accuracy"],
+            "avg_f1": metrics["avg_f1"],
+            "comparisons": comparisons,
+            "category_metrics": metrics["category_metrics"],
+        })
+
+    return results
+
+
+def _evaluate_from_precomputed(
+    doc_dir: str,
+    rubric_path: str,
+    pre_evaluated_dir: str,
+) -> list[dict]:
+    """Load pre-computed evaluation JSONs and compare against ground truth.
+
+    No LLM calls are made. The eval harness works as a pure metrics calculator.
+    """
+    rubric_data = json.loads(Path(rubric_path).read_text(encoding="utf-8"))
+    rubric = CompiledRubric.model_validate(rubric_data)
+    rule_categories = {r.rule_id: r.category for r in rubric.rules}
+
+    doc_dir_path = Path(doc_dir)
+    doc_files = sorted(doc_dir_path.glob("*.json"))
+    pre_eval_path = Path(pre_evaluated_dir)
+
+    results: list[dict] = []
+
+    for doc_file in doc_files:
+        doc_data = json.loads(doc_file.read_text(encoding="utf-8"))
+        document = Document.model_validate(doc_data)
+
+        if not document.ground_truth:
+            continue
+
+        # Load pre-computed evaluation for this document
+        eval_file = pre_eval_path / doc_file.name
+        if not eval_file.exists():
+            print(
+                f"  Warning: no pre-evaluated file for {document.doc_id} "
+                f"(expected {eval_file}), skipping",
+                file=sys.stderr,
+            )
+            continue
+
+        eval_data = json.loads(eval_file.read_text(encoding="utf-8"))
+        eval_result = DocumentEvaluation.model_validate(eval_data)
+
+        system_verdicts = _aggregate_verdicts(eval_result.evaluations)
+
+        comparisons: list[dict] = []
+        for gt in document.ground_truth:
+            sys_v = system_verdicts.get(gt.rule_id, "fail")
+            category = rule_categories.get(gt.rule_id, "unknown")
+            comparisons.append({
+                "doc_id": document.doc_id,
+                "rule_id": gt.rule_id,
+                "category": category,
+                "system_verdict": sys_v,
+                "ground_truth_verdict": gt.verdict,
+                "match": sys_v == gt.verdict,
+            })
+
+        metrics = _compute_metrics(comparisons)
+        results.append({
+            "doc_id": document.doc_id,
+            "calls": 0,
             "accuracy": metrics["overall_accuracy"],
             "avg_f1": metrics["avg_f1"],
             "comparisons": comparisons,
@@ -176,40 +228,37 @@ def run_eval(
     doc_dir: str,
     rubric_path: str,
     provider: str | None = None,
-    mode: str = "brute",
+    pre_evaluated: str | None = None,
 ) -> dict:
-    """Run the eval harness in the specified mode.
+    """Run the eval harness: brute-force evaluation against a golden set.
 
-    Modes:
-    - brute: brute-force evaluator (default)
-    - agent: agentic evaluator with targeted tool use
-    - compare: both, with side-by-side table
+    With --pre-evaluated, loads verdicts from disk instead of calling LLMs.
+    The harness becomes a pure metrics calculator — no API key required.
     """
-    if mode in ("brute", "agent"):
-        results = _run_single_mode(doc_dir, rubric_path, provider, mode)
-        _print_single_results(results)
-        return {"mode": mode, "results": results}
+    if pre_evaluated:
+        results = _evaluate_from_precomputed(doc_dir, rubric_path, pre_evaluated)
+    else:
+        results = _evaluate_with_llm(doc_dir, rubric_path, provider)
 
-    if mode == "compare":
-        brute_results = _run_single_mode(doc_dir, rubric_path, provider, "brute")
-        agent_results = _run_single_mode(doc_dir, rubric_path, provider, "agent")
-        _print_comparison(brute_results, agent_results)
-        return {"mode": "compare", "brute": brute_results, "agent": agent_results}
-
-    raise ValueError(f"Unknown mode: {mode}. Use brute, agent, or compare.")
+    _print_results(results)
+    return {"results": results}
 
 
-def _print_single_results(results: list[dict]) -> None:
-    """Print formatted metrics for a single mode."""
+def _print_results(results: list[dict]) -> None:
+    """Print formatted per-category and per-rule metrics."""
     print("\n" + "=" * 70)
     print("EVAL HARNESS RESULTS")
     print("=" * 70)
 
     for r in results:
-        print(f"\nDocument: {r['doc_id']} | Calls: {r['calls']} | "
-              f"Accuracy: {r['accuracy']} | Avg F1: {r['avg_f1']}")
+        print(
+            f"\nDocument: {r['doc_id']} | Calls: {r['calls']} | "
+            f"Accuracy: {r['accuracy']} | Avg F1: {r['avg_f1']}"
+        )
 
-        print(f"\n{'Category':<25} {'Prec':>6} {'Rec':>6} {'F1':>6} {'TP':>4} {'FP':>4} {'FN':>4}")
+        print(
+            f"\n{'Category':<25} {'Prec':>6} {'Rec':>6} {'F1':>6} {'TP':>4} {'FP':>4} {'FN':>4}"
+        )
         print("-" * 60)
         for cat, m in sorted(r.get("category_metrics", {}).items()):
             print(
@@ -217,7 +266,9 @@ def _print_single_results(results: list[dict]) -> None:
                 f"{m['f1']:>6.3f} {m['tp']:>4} {m['fp']:>4} {m['fn']:>4}"
             )
 
-        print(f"\n{'Doc':<12} {'Rule':<14} {'System':<8} {'Truth':<8} {'Match':<6}")
+        print(
+            f"\n{'Doc':<12} {'Rule':<14} {'System':<8} {'Truth':<8} {'Match':<6}"
+        )
         print("-" * 50)
         for c in r["comparisons"]:
             match_str = "yes" if c["match"] else "NO"
@@ -230,81 +281,14 @@ def _print_single_results(results: list[dict]) -> None:
     print("\n" + "=" * 70)
 
 
-def _print_comparison(brute_results: list[dict], agent_results: list[dict]) -> None:
-    """Print a side-by-side comparison of brute-force vs agentic evaluation."""
-    print("\n" + "=" * 90)
-    print("BRUTE-FORCE VS AGENTIC COMPARISON")
-    print("=" * 90)
-
-    print(f"\n{'Document':<14} {'Mode':<8} {'Calls':>8} {'Est. Cost':>12} {'Accuracy':>10} {'Avg F1':>10}")
-    print("-" * 90)
-
-    total_brute_calls = 0
-    total_agent_calls = 0
-
-    for br, ar in zip(brute_results, agent_results):
-        brute_cost = br["calls"] * _COST_PER_CALL
-        agent_cost = ar["calls"] * _COST_PER_CALL
-
-        print(
-            f"{br['doc_id']:<14} {'brute':<8} {br['calls']:>8} ${brute_cost:>10.3f} "
-            f"{br['accuracy']:>10.3f} {br['avg_f1']:>10.3f}"
-        )
-        print(
-            f"{ar['doc_id']:<14} {'agent':<8} {ar['calls']:>8} ${agent_cost:>10.3f} "
-            f"{ar['accuracy']:>10.3f} {ar['avg_f1']:>10.3f}"
-        )
-        print("-" * 90)
-
-        total_brute_calls += br["calls"]
-        total_agent_calls += ar["calls"]
-
-    total_brute_cost = total_brute_calls * _COST_PER_CALL
-    total_agent_cost = total_agent_calls * _COST_PER_CALL
-    savings = total_brute_cost - total_agent_cost
-    pct = (savings / total_brute_cost * 100) if total_brute_calls > 0 else 0
-
-    print(
-        f"{'TOTAL':<14} {'brute':<8} {total_brute_calls:>8} ${total_brute_cost:>10.3f}"
-    )
-    print(
-        f"{'TOTAL':<14} {'agent':<8} {total_agent_calls:>8} ${total_agent_cost:>10.3f}"
-    )
-    print(f"\nSavings: ${savings:.3f} ({pct:.1f}% fewer calls)")
-
-    # Per-category F1 comparison
-    print("\n" + "-" * 90)
-    print("PER-CATEGORY F1 COMPARISON")
-    print(f"{'Category':<25} {'Brute F1':>10} {'Agent F1':>10} {'Delta':>10}")
-    print("-" * 60)
-
-    # Aggregate category metrics across all docs
-    brute_cat_f1: dict[str, list[float]] = defaultdict(list)
-    agent_cat_f1: dict[str, list[float]] = defaultdict(list)
-
-    for br in brute_results:
-        for cat, m in br.get("category_metrics", {}).items():
-            brute_cat_f1[cat].append(m["f1"])
-    for ar in agent_results:
-        for cat, m in ar.get("category_metrics", {}).items():
-            agent_cat_f1[cat].append(m["f1"])
-
-    all_cats = sorted(set(brute_cat_f1.keys()) | set(agent_cat_f1.keys()))
-    for cat in all_cats:
-        b_avg = round(sum(brute_cat_f1[cat]) / len(brute_cat_f1[cat]), 3) if brute_cat_f1[cat] else 0.0
-        a_avg = round(sum(agent_cat_f1[cat]) / len(agent_cat_f1[cat]), 3) if agent_cat_f1[cat] else 0.0
-        delta = round(a_avg - b_avg, 3)
-        print(f"{cat:<25} {b_avg:>10.3f} {a_avg:>10.3f} {delta:>+10.3f}")
-
-    print("\n" + "=" * 90)
-
-
 def main():
     """CLI: run eval harness on a set of documents."""
     parser = argparse.ArgumentParser(
         description="Run eval harness: compare system verdicts to golden set."
     )
-    parser.add_argument("doc_dir", help="Directory of document JSONs with ground truth.")
+    parser.add_argument(
+        "doc_dir", help="Directory of document JSONs with ground truth."
+    )
     parser.add_argument("rubric_path", help="Path to compiled rubric JSON.")
     parser.add_argument(
         "--provider",
@@ -313,14 +297,18 @@ def main():
         help="LLM provider.",
     )
     parser.add_argument(
-        "--mode",
-        choices=["brute", "agent", "compare"],
-        default="brute",
-        help="Evaluation mode: brute (default), agent, or compare both.",
+        "--pre-evaluated",
+        default=None,
+        help="Directory of pre-computed evaluation JSONs. When set, no LLM calls are made.",
     )
     args = parser.parse_args()
 
-    run_eval(args.doc_dir, args.rubric_path, provider=args.provider, mode=args.mode)
+    run_eval(
+        args.doc_dir,
+        args.rubric_path,
+        provider=args.provider,
+        pre_evaluated=args.pre_evaluated,
+    )
 
 
 if __name__ == "__main__":

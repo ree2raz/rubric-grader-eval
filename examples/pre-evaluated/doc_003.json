@@ -1,0 +1,113 @@
+{
+  "doc_id": "doc_003",
+  "evaluations": [
+    {
+      "rule_id": "STRUCT-001",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The chunk lacks a clearly labeled 'Overview' or 'Introduction' section within the first two sections. It begins directly with a brief description of 'ConfigVault' without any distinct header for an overview.",
+      "evidence_quote": "## ConfigVault\n\nA lightweight configuration management library."
+    },
+    {
+      "rule_id": "STRUCT-002",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The document contains more than five sections, but there is no table of contents present with links to the section headings.",
+      "evidence_quote": "## ConfigVault\n\nA lightweight configuration management library.\n\n## Install\n\n```bash\npip install configvault\n```\n\n## Usage\n\n```python\nfrom configvault import Vault\n\nv = Vault(\"config.yaml\")\ndb_host = v.get(\"database.host\")\n```\n\n## Configuration Format\n\nConfigVault reads YAML files. Keys use dot-notation for nested values.\n\nExample config.yaml:\n```yaml\ndatabase:\n  host: localhost\n  port: 5432\napi:\n  key: your-key-here\n```\n\n## Environment Overrides\n\nEnvironment variables override config file values. The mapping is automatic: `database.host` maps to `CONFIGVAULT_DATABASE_HOST`.\n\nSet the prefix with:\n```python\nv = Vault(\"config.yaml\", env_prefix=\"MYAPP\")\n```\nThen `database.host` maps to `MYAPP_DATABASE_HOST`.\n\n## Encryption\n\nSensitive values can be encrypted at rest. Use the CLI to encrypt:\n```bash\nconfigvault encrypt config.yaml --key mykey\n```\nDecryption is automatic when loading with the key:\n```python\nv = Vault(\"config.yaml\", encryption_key=\"mykey\")\n```\n\n## Contributing\n\nPRs welcome. Run tests with `pytest`. Format with `black`."
+    },
+    {
+      "rule_id": "STRUCT-003",
+      "chunk_index": 0,
+      "verdict": "pass",
+      "reasoning": "The headings follow a consistent hierarchy throughout the chunk. All headings are H2, and there are no skipped levels, making the structure consistent.",
+      "evidence_quote": "## ConfigVault\n\n## Install\n\n## Usage\n\n## Configuration Format\n\n## Environment Overrides\n\n## Encryption\n\n## Contributing"
+    },
+    {
+      "rule_id": "COMP-001",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The chunk provides usage examples and setup instructions but does not include documentation of parameters for any public API endpoints or functions, such as their name, type, and description.",
+      "evidence_quote": "v = Vault(\"config.yaml\")"
+    },
+    {
+      "rule_id": "COMP-002",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The chunk describes the usage and features of the ConfigVault library but does not describe the return values of any documented functions or endpoints, as required by the rule. The only function mentioned is `v.get('database.host')`, but it lacks any description of the return value, including its type and meaning.",
+      "evidence_quote": "db_host = v.get('database.host')"
+    },
+    {
+      "rule_id": "COMP-003",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The chunk does not contain any information about error handling, error codes, or exception types. It focuses on installation, usage, configuration format, environment overrides, and encryption without mentioning errors.",
+      "evidence_quote": "Sensitive values can be encrypted at rest. Use the CLI to encrypt:"
+    },
+    {
+      "rule_id": "COMP-004",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The document does not describe any authentication method, required headers, or token format. The content focuses on configuration management and environment overrides, not authentication.",
+      "evidence_quote": "ConfigVault reads YAML files. Keys use dot-notation for nested values."
+    },
+    {
+      "rule_id": "CODE-001",
+      "chunk_index": 0,
+      "verdict": "pass",
+      "reasoning": "The chunk contains runnable Python code examples demonstrating basic usage of the library, including instantiating a Vault object and accessing configuration values.",
+      "evidence_quote": "```python\nfrom configvault import Vault\n\nv = Vault(\"config.yaml\")\ndb_host = v.get(\"database.host\")\n```"
+    },
+    {
+      "rule_id": "CODE-002",
+      "chunk_index": 0,
+      "verdict": "pass",
+      "reasoning": "All code examples provided in the chunk are syntactically valid and correctly labeled with their programming language. There is no pseudocode present that is not labeled.",
+      "evidence_quote": "```python\nfrom configvault import Vault\n\nv = Vault(\"config.yaml\")\ndb_host = v.get(\"database.host\")\n```"
+    },
+    {
+      "rule_id": "CODE-003",
+      "chunk_index": 0,
+      "verdict": "pass",
+      "reasoning": "The code examples provided in the chunk use classes and functions from the current API with no indication of deprecated methods, removed parameters, or outdated endpoints.",
+      "evidence_quote": "```python\nfrom configvault import Vault\n\nv = Vault(\"config.yaml\")\ndb_host = v.get(\"database.host\")\n```\n"
+    },
+    {
+      "rule_id": "ACC-001",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The chunk does not contain any version numbers, making it impossible to verify if they are current or stale based on the rule's requirement.",
+      "evidence_quote": "A lightweight configuration management library."
+    },
+    {
+      "rule_id": "ACC-002",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The chunk provides examples and instructions for using ConfigVault but contains no links, internal or external. Without any links present in the chunk, there is no way to evaluate if they resolve.",
+      "evidence_quote": "No links were found in this chunk."
+    },
+    {
+      "rule_id": "COMPL-001",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The chunk does not contain a license section or a link to a project license file. It covers installation, usage, configuration, environment overrides, encryption, and contributing, but omits any mention of a license.",
+      "evidence_quote": "## ConfigVault\n\nA lightweight configuration management library."
+    },
+    {
+      "rule_id": "COMPL-002",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The chunk does not contain a changelog section. Without a changelog, it is not possible to confirm that breaking changes are documented.",
+      "evidence_quote": "The chunk does not contain a changelog or mention any breaking changes."
+    },
+    {
+      "rule_id": "COMPL-003",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The chunk does not contain any deprecation notices. There is no mention of deprecated features, their deprecation versions, or recommended replacements.",
+      "evidence_quote": "Sensitive values can be encrypted at rest. Use the CLI to encrypt: `configvault encrypt config.yaml --key mykey`"
+    }
+  ],
+  "total_chunks": 1,
+  "total_rules": 15,
+  "total_llm_calls": 15
+}

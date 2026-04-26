@@ -1,0 +1,113 @@
+{
+  "doc_id": "doc_002",
+  "evaluations": [
+    {
+      "rule_id": "STRUCT-001",
+      "chunk_index": 0,
+      "verdict": "pass",
+      "reasoning": "The chunk contains a section labeled 'Getting Started with DataPipe' that clearly describes what the system (DataPipe) does: 'a streaming data processing framework for Python' which handles various tasks such as event ingestion and transformation. This effectively serves as an overview.",
+      "evidence_quote": "## Getting Started with DataPipe\n\nDataPipe is a streaming data processing framework for Python. It handles real-time event ingestion, transformation, and routing to downstream sinks."
+    },
+    {
+      "rule_id": "STRUCT-002",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The document contains more than five sections, but there is no table of contents present with links to each section heading.",
+      "evidence_quote": "## Getting Started with DataPipe"
+    },
+    {
+      "rule_id": "STRUCT-003",
+      "chunk_index": 0,
+      "verdict": "pass",
+      "reasoning": "The chunk maintains a consistent heading hierarchy with no skipped levels. It uses H2 headings throughout, maintaining a uniform structure.",
+      "evidence_quote": "## Getting Started with DataPipe\n## Prerequisites\n## Installation\n## Step 1: Define a Source\n## Step 2: Add a Transformer\n## Step 3: Configure the Sink\n## Step 4: Run the Pipeline\n## Error Handling\n## Next Steps\n## Changelog"
+    },
+    {
+      "rule_id": "COMP-001",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The chunk provides a tutorial on setting up a data pipeline with DataPipe but lacks documentation of parameters for any public API endpoint or function. There is no mention of parameters with name, type, and description for API functions.",
+      "evidence_quote": "This tutorial walks through setting up a basic pipeline that reads from a webhook source and writes to a PostgreSQL database."
+    },
+    {
+      "rule_id": "COMP-002",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The chunk provides descriptions of installation and setup steps for DataPipe but lacks descriptions of return values for any documented function or endpoint. The rule requires that every function or endpoint have its return value, including type and meaning, described, which is not present in this text.",
+      "evidence_quote": "For this tutorial, we use a webhook source that listens for HTTP POST requests:\n\n```\nsource = WebhookSource(port=8080)\npipeline.add_source(source)\n```\n\nNote: The source starts listening when the pipeline is activated."
+    },
+    {
+      "rule_id": "COMP-003",
+      "chunk_index": 0,
+      "verdict": "pass",
+      "reasoning": "The document details error handling related to failed sink writes, including retry logic and the use of a dead-letter queue. Additionally, it mentions wrapping the pipeline in a try/except block for handling source errors.",
+      "evidence_quote": "DataPipe retries failed sink writes up to 3 times with exponential backoff. If all retries fail, the event is written to a dead-letter queue (DLQ) file at `./dlq/failed_events.jsonl`. To handle source errors, wrap the pipeline in a try/except block and check the pipeline's error log."
+    },
+    {
+      "rule_id": "COMP-004",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The chunk does not contain any information about authentication methods, required headers, or token formats, which are necessary if the API requires authentication.",
+      "evidence_quote": "DataPipe is a streaming data processing framework for Python. It handles real-time event ingestion, transformation, and routing to downstream sinks."
+    },
+    {
+      "rule_id": "CODE-001",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The chunk describes the steps for setting up and running a data pipeline using DataPipe, but it does not include a complete, runnable code example with details such as import statements or printing results, which demonstrates basic usage as required by the rule.",
+      "evidence_quote": "Activate the pipeline:\n\n```\npipeline.run()\n```\n\nThe pipeline runs until interrupted. Send a test event:\n\n```bash\ncurl -X POST http://localhost:8080/events -H 'Content-Type: application/json' -d '{\"user\": {\"name\": \"Alice\"}, \"action\": \"login\"}'\n```\n\nCheck your PostgreSQL table to confirm the event was processed."
+    },
+    {
+      "rule_id": "CODE-002",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "Several code examples are provided, but the syntactic validity cannot be fully determined from the available information. The WebhookSource and pipeline functions and objects are used without their full context or definitions, making it unclear if the examples are syntactically valid Python code.",
+      "evidence_quote": "source = WebhookSource(port=8080)\npipeline.add_source(source)\n\n...pipeline.run()"
+    },
+    {
+      "rule_id": "CODE-003",
+      "chunk_index": 0,
+      "verdict": "pass",
+      "reasoning": "The code examples within the chunk utilize the current version (2.3.0) of the DataPipe API, as indicated in the installation instruction. There is no indication of deprecated methods, removed parameters, or outdated endpoints being used within the code examples provided.",
+      "evidence_quote": "pip install datapipe==2.3.0"
+    },
+    {
+      "rule_id": "ACC-001",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The chunk lists version numbers (2.3.0) for DataPipe, but it does not mention what the current release version is for comparison. Without this information, it is impossible to determine if the version numbers are current.",
+      "evidence_quote": "pip install datapipe==2.3.0"
+    },
+    {
+      "rule_id": "ACC-002",
+      "chunk_index": 0,
+      "verdict": "pass",
+      "reasoning": "The chunk contains a link to the API reference page in the form of a URL (https://docs.datapipe.dev/api), which appears to be a valid and properly structured external link. No broken or placeholder links are present.",
+      "evidence_quote": "See the full API reference at https://docs.datapipe.dev/api for details."
+    },
+    {
+      "rule_id": "COMPL-001",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The chunk does not contain a section or any reference to a project license or a license file. It primarily focuses on installation, setup, and usage of the DataPipe framework, but does not address licensing.",
+      "evidence_quote": "## Getting Started with DataPipe\n\nDataPipe is a streaming data processing framework for Python."
+    },
+    {
+      "rule_id": "COMPL-002",
+      "chunk_index": 0,
+      "verdict": "pass",
+      "reasoning": "The changelog contains an entry for version 2.0.0 that explicitly mentions a breaking change: 'Changed transformer API from class-based to functional'. This satisfies the requirement for documenting breaking changes.",
+      "evidence_quote": "### v2.0.0\n- BREAKING: Changed transformer API from class-based to functional"
+    },
+    {
+      "rule_id": "COMPL-003",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The chunk does not contain any explicit deprecation notice for deprecated features, including the version of deprecation and recommended replacements as required by the rule. It only contains general information on setting up a pipeline, installation, and a changelog without any deprecated features marked.",
+      "evidence_quote": "## Changelog\n\n### v2.3.0\n- Added file watcher source\n- Improved PostgreSQL sink performance\n\n### v2.0.0\n- BREAKING: Changed transformer API from class-based to functional\n- Removed legacy XML source"
+    }
+  ],
+  "total_chunks": 1,
+  "total_rules": 15,
+  "total_llm_calls": 15
+}

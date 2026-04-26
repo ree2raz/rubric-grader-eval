@@ -2,7 +2,7 @@
 
 ## What This Repo Is
 
-A reference implementation demonstrating evaluation patterns for LLM rubric grading. Intentionally minimal. Not a product. The eval harness (golden-set comparison with precision/recall/F1) is the centerpiece. The compiler and evaluator demonstrate the pattern. The repo accompanies a blog post about rubric grading in production.
+A reference pattern for compiling unstructured rubrics into machine-readable schemas, then evaluating documents against them with golden-set ground truth. Intentionally minimal. Not a product. The compiler is the artifact — it handles three variance cases that represent real-world rubric format problems. The eval harness proves the compiler worked. The repo accompanies a blog post about rubric grading in production.
 
 ## Architecture
 
@@ -12,9 +12,9 @@ Two-stage pipeline plus eval harness:
 CSV rubric → [compiler.py] → compiled JSON rules → [evaluator.py] → chunk×rule verdicts → [eval.py] → metrics
 ```
 
-- **compiler.py**: Reads rubric as raw text (not pandas), sends to LLM, validates output via Pydantic. Handles three variance cases: clean CSV, boolean composites in notes columns, broken PDF-exported documents.
+- **compiler.py**: Reads rubric as raw text (not pandas), sends to LLM, validates output via Pydantic. Handles three variance cases: clean CSV, boolean composites in notes columns, broken PDF-exported documents. The most carefully tuned component — this is the artifact.
 - **evaluator.py**: Brute-force. Chunks document by 1024 tokens (tiktoken). For each chunk × each rule, one LLM call. No filtering, no relevance routing. This is intentionally inefficient — it's the pattern to measure.
-- **eval.py**: Loads documents with `ground_truth` labels, runs evaluator, compares system verdicts to ground truth. Prints per-category precision/recall/F1 and per-rule agreement table.
+- **eval.py**: Loads documents with `ground_truth` labels, runs evaluator, compares system verdicts to ground truth. Prints per-category precision/recall/F1 and per-rule agreement table. Supports `--pre-evaluated` flag to load pre-computed verdicts from disk — no LLM calls, no API key needed.
 - **llm.py**: Provider factory. Supports Anthropic (default), OpenAI, vLLM. Unified `complete(system, user) -> str` interface.
 - **models.py**: Pydantic v2 models. All LLM output is validated here. Invalid output raises, never silently accepted.
 
@@ -78,7 +78,8 @@ The 5 example documents in `examples/documents/` have `ground_truth` arrays refe
 ### Add a new example document
 1. Create `examples/documents/doc_NNN.json` with `doc_id`, `sections`, `metadata`, `ground_truth`
 2. Ground truth must reference rule_ids from the clean rubric
-3. Run eval harness to verify: `uv run python -m rubric_eval.eval examples/documents/ examples/compiled/clean_compiled.json`
+3. Run eval harness to verify: `uv run python -m rubric_eval.eval examples/documents/ examples/compiled/clean_compiled.json --provider openai`
+4. Generate pre-evaluated verdicts for the new doc so the harness can run without API key
 
 ### Change a prompt
 1. Edit the `.md` file in `src/rubric_eval/prompts/`
@@ -95,6 +96,7 @@ The 5 example documents in `examples/documents/` have `ground_truth` arrays refe
 
 - Do not add insurance, call-center, contact-center, or customer-agent domain language. The domain is technical documentation.
 - Do not add rule filtering or relevance routing to the evaluator. The brute force is intentional — it's the pattern to measure, not to optimize.
+- Do not add agentic/tool-use evaluation. The agentic mode was deliberately stripped from this repo. See RegTriage for that pattern.
 - Do not inline prompts in Python source. Prompts stay in `prompts/*.md`.
 - Do not add streaming, retries, or caching to `llm.py`. This is a reference implementation, not production infrastructure.
 - Do not make tests depend on real API calls.
@@ -107,6 +109,7 @@ uv run python -m rubric_eval.compiler examples/rubrics/clean.csv > compiled.json
 uv run python -m rubric_eval.evaluator examples/documents/doc_001.json compiled.json
 uv run python -m rubric_eval.eval examples/documents/ compiled.json
 
-# Or use pre-compiled rubric (no API key needed for just the eval harness comparison)
-uv run python -m rubric_eval.eval examples/documents/ examples/compiled/clean_compiled.json
+# Or use pre-compiled rubric with pre-evaluated verdicts (no API key needed)
+uv run python -m rubric_eval.eval examples/documents/ examples/compiled/clean_compiled.json \
+  --pre-evaluated examples/pre-evaluated/
 ```

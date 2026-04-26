@@ -1,0 +1,218 @@
+{
+  "doc_id": "doc_005",
+  "evaluations": [
+    {
+      "rule_id": "STRUCT-001",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The chunk does not contain a clearly labeled overview or introduction section within the first two sections. The chunk starts with a 'Troubleshooting CacheLayer' section, which addresses common issues but does not provide an overview of what the system or API does.",
+      "evidence_quote": "## Troubleshooting CacheLayer\n\nCacheLayer is a distributed caching library for Python web applications. This troubleshooting guide covers common issues encountered during setup, operation, and scaling of CacheLayer v4.1.0."
+    },
+    {
+      "rule_id": "STRUCT-002",
+      "chunk_index": 0,
+      "verdict": "pass",
+      "reasoning": "The document includes a table of contents with links to each section heading, as required for documents with more than five sections.",
+      "evidence_quote": "## Table of Contents\n\n- [Connection Issues](#connection-issues)\n- [Cache Misses](#cache-misses)\n- [Memory Issues](#memory-issues)\n- [Serialization Errors](#serialization-errors)\n- [Cluster Problems](#cluster-problems)\n- [Performance Tuning](#performance-tuning)\n- [Known Limitations](#known-limitations)\n- [Getting Help](#getting-help)\n- [Changelog](#changelog)"
+    },
+    {
+      "rule_id": "STRUCT-003",
+      "chunk_index": 0,
+      "verdict": "pass",
+      "reasoning": "The headings in this chunk follow a consistent hierarchy. The hierarchy starts with H2 for section headings and uses H3 for subsections without skipping levels.",
+      "evidence_quote": "## Connection Issues\n### Cannot connect to cache server\n### Timeout on large clusters"
+    },
+    {
+      "rule_id": "COMP-001",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The chunk does not contain documentation for any public API endpoint or function with parameter details including name, type, and description. The content is oriented towards troubleshooting and does not provide parameter documentation.",
+      "evidence_quote": "CacheLayer is a distributed caching library for Python web applications. This troubleshooting guide covers common issues encountered during setup, operation, and scaling of CacheLayer v4.1.0."
+    },
+    {
+      "rule_id": "COMP-002",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "This chunk contains troubleshooting information and configuration examples but does not document any functions or endpoints with descriptions of their return values.",
+      "evidence_quote": "from cachelayer import CacheClient"
+    },
+    {
+      "rule_id": "COMP-003",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The chunk describes symptoms, causes, and solutions for various error scenarios but does not explicitly document error codes or exception types with their meanings. While exceptions like `ConnectionRefusedError`, `TimeoutError`, `TypeError`, and `OOM` are mentioned, their implications or any specific error codes are not detailed.",
+      "evidence_quote": "**Symptom**: `ConnectionRefusedError` on startup."
+    },
+    {
+      "rule_id": "COMP-004",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The chunk provides troubleshooting information for a caching library and does not mention API authentication methods, required headers, or token formats. It only addresses issues such as connection problems and memory issues in CacheLayer.",
+      "evidence_quote": "This troubleshooting guide covers common issues encountered during setup, operation, and scaling of CacheLayer v4.1.0."
+    },
+    {
+      "rule_id": "CODE-001",
+      "chunk_index": 0,
+      "verdict": "pass",
+      "reasoning": "The chunk includes several runnable code examples demonstrating the usage of CacheLayer. Examples cover connection setup, connectivity testing, handling timeouts, managing cache keys with versioning, setting TTL, and serialization.",
+      "evidence_quote": "```python\nfrom cachelayer import CacheClient\n\n# Default connection\nclient = CacheClient(host=\"localhost\", port=6380)\n\n# Test connectivity\ntry:\n    client.ping()\n    print(\"Connected\")\nexcept ConnectionError as e:\n    print(f\"Failed: {e}\")\n```\n\n```python\nclient = CacheClient(host=\"localhost\", port=6380, timeout=30)\n```"
+    },
+    {
+      "rule_id": "CODE-002",
+      "chunk_index": 0,
+      "verdict": "pass",
+      "reasoning": "The code examples presented in the chunk are complete and syntactically valid Python code snippets. They include correct syntax for importing modules, defining classes, and using try-except blocks.",
+      "evidence_quote": "```python\nfrom cachelayer import CacheClient\n\n# Default connection\nclient = CacheClient(host=\"localhost\", port=6380)\n\n# Test connectivity\ntry:\n    client.ping()\n    print(\"Connected\")\nexcept ConnectionError as e:\n    print(f\"Failed: {e}\")\n```"
+    },
+    {
+      "rule_id": "CODE-003",
+      "chunk_index": 0,
+      "verdict": "pass",
+      "reasoning": "The code examples in the chunk use 'CacheClient', an API class from 'cachelayer', and specify host and port parameters which are typical of current API usage. There are no indications of deprecated methods, removed parameters, or outdated endpoints being used.",
+      "evidence_quote": "client = CacheClient(host=\"localhost\", port=6380)"
+    },
+    {
+      "rule_id": "ACC-001",
+      "chunk_index": 0,
+      "verdict": "pass",
+      "reasoning": "The chunk mentions version number 'v4.1.0', which appears to be the current release as it is referenced in both the main content and the latest changelog entry dated 2026-02-01.",
+      "evidence_quote": "This troubleshooting guide covers common issues encountered during setup, operation, and scaling of CacheLayer v4.1.0."
+    },
+    {
+      "rule_id": "ACC-002",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The chunk provides a Table of Contents with internal links, but there's no evidence or explicit check to ensure these links resolve correctly. Additionally, there are no external links or placeholders that verify proper resolution or labeling.",
+      "evidence_quote": "- [Connection Issues](#connection-issues)"
+    },
+    {
+      "rule_id": "COMPL-001",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The chunk does not include a license section or provide a link to a project license file. The content primarily consists of troubleshooting guidance and technical details related to the CacheLayer library.",
+      "evidence_quote": "## Troubleshooting CacheLayer"
+    },
+    {
+      "rule_id": "COMPL-002",
+      "chunk_index": 0,
+      "verdict": "pass",
+      "reasoning": "The changelog section in the chunk includes an entry for version v4.0.0, which clearly indicates a breaking change related to the serialization format change from msgpack to JSON.",
+      "evidence_quote": "### v4.0.0 (2025-10-15)\n- BREAKING: Changed serialization format from msgpack to JSON"
+    },
+    {
+      "rule_id": "COMPL-003",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The chunk does not contain any mention of deprecated features nor does it include deprecation notices specifying when a feature was deprecated and what its replacement is. Content in the chunk is mainly troubleshooting and changelog information.",
+      "evidence_quote": "## Known Limitations\n\n- Maximum key size: 512 bytes\n- Maximum value size: 64 MB\n- Cluster mode does not support transactions\n- Hot key detection requires v4.2+ (not yet released)\n\n## Changelog\n\n### v4.1.0 (2026-02-01)\n- Added write batching API\n- Fixed memory leak in connection pool\n- Improved cluster discovery performance"
+    },
+    {
+      "rule_id": "STRUCT-001",
+      "chunk_index": 1,
+      "verdict": "fail",
+      "reasoning": "The chunk contains a changelog section but does not include an overview or introduction section that describes the system or API. No overview content is present within this chunk.",
+      "evidence_quote": "- BREAKING: Removed `CacheClient.connect_cluster()` — use `CacheClient(cluster=True)` instead."
+    },
+    {
+      "rule_id": "STRUCT-002",
+      "chunk_index": 1,
+      "verdict": "fail",
+      "reasoning": "The chunk does not contain a table of contents or any indication of section headings being linked. It appears to be part of a changelog rather than a structured document with sections.",
+      "evidence_quote": "- BREAKING: Removed `CacheClient.connect_cluster()` — use `CacheClient(cluster=True)` instead"
+    },
+    {
+      "rule_id": "STRUCT-003",
+      "chunk_index": 1,
+      "verdict": "fail",
+      "reasoning": "The chunk does not contain any headings to evaluate for consistent hierarchy. The content consists of bullet points, which do not demonstrate heading levels.",
+      "evidence_quote": "- BREAKING: Removed `CacheClient.connect_cluster()` — use `CacheClient(cluster=True)` instead"
+    },
+    {
+      "rule_id": "COMP-001",
+      "chunk_index": 1,
+      "verdict": "fail",
+      "reasoning": "The chunk does not include any API endpoints or functions with documented parameters. It only contains changelog notes about feature changes.",
+      "evidence_quote": "- BREAKING: Removed `CacheClient.connect_cluster()` — use `CacheClient(cluster=True)` instead\n- Added quorum mode for clusters"
+    },
+    {
+      "rule_id": "COMP-002",
+      "chunk_index": 1,
+      "verdict": "fail",
+      "reasoning": "The chunk does not contain any documentation about functions or endpoints and therefore does not describe return values, including type and meaning.",
+      "evidence_quote": "- BREAKING: Removed `CacheClient.connect_cluster()` — use `CacheClient(cluster=True)` instead\n- Added quorum mode for clusters"
+    },
+    {
+      "rule_id": "COMP-003",
+      "chunk_index": 1,
+      "verdict": "fail",
+      "reasoning": "The chunk does not provide any information on error handling, such as error codes or exceptions.",
+      "evidence_quote": "- BREAKING: Removed `CacheClient.connect_cluster()` — use `CacheClient(cluster=True)` instead"
+    },
+    {
+      "rule_id": "COMP-004",
+      "chunk_index": 1,
+      "verdict": "fail",
+      "reasoning": "The chunk contains changelog information related to code alterations and features but provides no details about authentication methods, required headers, or token formats.",
+      "evidence_quote": "- BREAKING: Removed `CacheClient.connect_cluster()` — use `CacheClient(cluster=True)` instead\n- Added quorum mode for clusters"
+    },
+    {
+      "rule_id": "CODE-001",
+      "chunk_index": 1,
+      "verdict": "fail",
+      "reasoning": "The chunk does not contain any runnable code examples demonstrating basic usage as required by the rule.",
+      "evidence_quote": "BREAKING: Removed `CacheClient.connect_cluster()` — use `CacheClient(cluster=True)` instead\n- Added quorum mode for clusters"
+    },
+    {
+      "rule_id": "CODE-002",
+      "chunk_index": 1,
+      "verdict": "fail",
+      "reasoning": "The chunk does not contain any code examples to evaluate for syntactic validity, nor does it include any pseudocode. It focuses on a changelog regarding breaking changes and feature additions.",
+      "evidence_quote": "- BREAKING: Removed `CacheClient.connect_cluster()` — use `CacheClient(cluster=True)` instead"
+    },
+    {
+      "rule_id": "CODE-003",
+      "chunk_index": 1,
+      "verdict": "fail",
+      "reasoning": "The chunk does not provide any code examples to evaluate against the current API surface. Without such examples, it's impossible to assess compliance with the rule.",
+      "evidence_quote": "- BREAKING: Removed `CacheClient.connect_cluster()` — use `CacheClient(cluster=True)` instead"
+    },
+    {
+      "rule_id": "ACC-001",
+      "chunk_index": 1,
+      "verdict": "fail",
+      "reasoning": "The chunk does not contain any version numbers, so it cannot be determined if the correct current release version is mentioned.",
+      "evidence_quote": "- BREAKING: Removed `CacheClient.connect_cluster()` — use `CacheClient(cluster=True)` instead\n- Added quorum mode for clusters"
+    },
+    {
+      "rule_id": "ACC-002",
+      "chunk_index": 1,
+      "verdict": "fail",
+      "reasoning": "The chunk does not contain any internal or external links, which are necessary to evaluate their resolution status.",
+      "evidence_quote": "BREAKING: Removed `CacheClient.connect_cluster()` — use `CacheClient(cluster=True)` instead\n- Added quorum mode for clusters"
+    },
+    {
+      "rule_id": "COMPL-001",
+      "chunk_index": 1,
+      "verdict": "fail",
+      "reasoning": "The chunk provides a changelog detailing breaking changes and new features, but there is no section or reference to a license or license file.",
+      "evidence_quote": "- BREAKING: Removed `CacheClient.connect_cluster()` — use `CacheClient(cluster=True)` instead\n- Added quorum mode for clusters"
+    },
+    {
+      "rule_id": "COMPL-002",
+      "chunk_index": 1,
+      "verdict": "pass",
+      "reasoning": "The chunk contains a changelog entry for a breaking change, which is explicitly listed.",
+      "evidence_quote": "- BREAKING: Removed `CacheClient.connect_cluster()` — use `CacheClient(cluster=True)` instead"
+    },
+    {
+      "rule_id": "COMPL-003",
+      "chunk_index": 1,
+      "verdict": "fail",
+      "reasoning": "The chunk describes a removed feature but does not include a deprecation notice indicating when the deprecation occurred or suggest a recommended replacement with a proper deprecation format.",
+      "evidence_quote": "BREAKING: Removed `CacheClient.connect_cluster()` — use `CacheClient(cluster=True)` instead"
+    }
+  ],
+  "total_chunks": 2,
+  "total_rules": 15,
+  "total_llm_calls": 30
+}

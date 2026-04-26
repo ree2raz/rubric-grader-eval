@@ -1,0 +1,218 @@
+{
+  "doc_id": "doc_004",
+  "evaluations": [
+    {
+      "rule_id": "STRUCT-001",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The text mentions an 'Overview' section in the Table of Contents, but it is not present or quoted in this chunk. Therefore, there is no evidence of a clearly labeled overview section present in the first two sections.",
+      "evidence_quote": "## Migration Guide: LogRouter v2 to v3\n\nThis guide covers the migration from LogRouter v2.x to v3.0.0."
+    },
+    {
+      "rule_id": "STRUCT-002",
+      "chunk_index": 0,
+      "verdict": "pass",
+      "reasoning": "The document contains more than five sections and includes a table of contents with links to each section heading, meeting the requirements of the rule.",
+      "evidence_quote": "## Table of Contents\n\n1. [Overview](#overview)\n2. [Breaking Changes](#breaking-changes)\n3. [New Features](#new-features)\n4. [Step-by-Step Migration](#step-by-step-migration)\n5. [Configuration Changes](#configuration-changes)\n6. [SDK Updates](#sdk-updates)\n7. [Testing Your Migration](#testing-your-migration)\n8. [Rollback Procedure](#rollback-procedure)\n9. [FAQ](#faq)\n10. [Changelog](#changelog)\n11. [License](#license)"
+    },
+    {
+      "rule_id": "STRUCT-003",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The headings in the chunk do not maintain a consistent hierarchy. There are section headings such as '## Migration Guide: LogRouter v2 to v3' that are followed directly by subsections '### Removed Features' without an intermediate heading level.",
+      "evidence_quote": "## Migration Guide: LogRouter v2 to v3\n\n### Removed Features"
+    },
+    {
+      "rule_id": "COMP-001",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The chunk provides a breakdown of new features, breaking changes, and migration steps but does not include documentation for public API endpoints or functions with parameter name, type, and description.",
+      "evidence_quote": "### Parameters\n\n`Config` constructor:\n- `host` (str, required): Server hostname\n- `port` (int, required): Server port\n- `index` (str, required): Default log index\n- `batch_size` (int, optional): Events per batch. Default: 1000. Max: 5000."
+    },
+    {
+      "rule_id": "COMP-002",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The chunk does not describe any return values for documented functions or endpoints. It mainly discusses migration steps, configuration changes, and other logistical details.",
+      "evidence_quote": "This guide covers the migration from LogRouter v2.x to v3.0.0. LogRouter is a log aggregation and routing service that collects structured logs from application instances and forwards them to configured sinks (Elasticsearch, S3, Datadog)."
+    },
+    {
+      "rule_id": "COMP-003",
+      "chunk_index": 0,
+      "verdict": "pass",
+      "reasoning": "The chunk includes a dedicated section on error handling, listing specific error codes such as BATCH_TOO_LARGE, INVALID_FORMAT, AUTH_EXPIRED, and SINK_UNREACHABLE, along with their meanings.",
+      "evidence_quote": "v3 introduces structured error responses: {\"error\": {\"code\": \"BATCH_TOO_LARGE\", \"message\": \"Batch size 6000 exceeds maximum of 5000\", \"request_id\": \"req_abc123\"}} Error codes: - BATCH_TOO_LARGE: Reduce batch size - INVALID_FORMAT: Log must be JSON, not XML - AUTH_EXPIRED: Refresh your API token - SINK_UNREACHABLE: Check destination connectivity"
+    },
+    {
+      "rule_id": "COMP-004",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The chunk does not provide any details on authentication methods, required headers, or token formats, which are necessary if the API requires authentication. The content primarily focuses on migration steps and configuration changes.",
+      "evidence_quote": "This guide covers the migration from LogRouter v2.x to v3.0.0."
+    },
+    {
+      "rule_id": "CODE-001",
+      "chunk_index": 0,
+      "verdict": "pass",
+      "reasoning": "The chunk contains multiple runnable code examples demonstrating basic usage, including both Python and bash scripts. This satisfies the requirement for including at least one code example.",
+      "evidence_quote": "```python\nfrom logrouter import LogRouter, Config\nconfig = Config(host=\"localhost\", port=9200, index=\"my-index\")\nrouter = LogRouter.init(config)\n```"
+    },
+    {
+      "rule_id": "CODE-002",
+      "chunk_index": 0,
+      "verdict": "pass",
+      "reasoning": "The given code examples in the chunk are syntactically valid for Python. The examples specify the language (e.g., Python code and JSON format) and do not appear to contain errors. No unlabeled pseudocode is present.",
+      "evidence_quote": "```python\nfrom logrouter import LogRouter, Config\nconfig = Config(host=\"localhost\", port=9200, index=\"my-index\")\nrouter = LogRouter.init(config)\n```\n\n```json\n{\"timestamp\": \"2024-04-01T00:00:00Z\"}\n```"
+    },
+    {
+      "rule_id": "CODE-003",
+      "chunk_index": 0,
+      "verdict": "pass",
+      "reasoning": "The code examples in the chunk reflect the current API, using the new methods such as `LogRouter.init()` and updated endpoints like `/v3/destinations` instead of the deprecated ones.",
+      "evidence_quote": "After (v3):\n```python\nfrom logrouter import LogRouter, Config\nconfig = Config(host=\"localhost\", port=9200, index=\"my-index\")\nrouter = LogRouter.init(config)\n```\n\nReplace `/v2/sinks` calls with `/v3/destinations`."
+    },
+    {
+      "rule_id": "ACC-001",
+      "chunk_index": 0,
+      "verdict": "pass",
+      "reasoning": "All version numbers mentioned in this chunk refer correctly to the current release, which is v3.0.0, as specified throughout the migration guide and example commands.",
+      "evidence_quote": "This guide covers the migration from LogRouter v2.x to v3.0.0."
+    },
+    {
+      "rule_id": "ACC-002",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The chunk does not provide any hyperlinks, so there is no way to assess whether links resolve properly or are placeholders. The table of contents lists sections, but without actual links, compliance cannot be determined.",
+      "evidence_quote": "1. [Overview](#overview)"
+    },
+    {
+      "rule_id": "COMPL-001",
+      "chunk_index": 0,
+      "verdict": "pass",
+      "reasoning": "The chunk's Table of Contents explicitly includes a 'License' section, indicating that the document will contain the necessary license information elsewhere.",
+      "evidence_quote": "11. [License](#license)"
+    },
+    {
+      "rule_id": "COMPL-002",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The chunk provides a migration guide and lists breaking changes, but it does not contain a changelog entry documenting these breaking changes, which is required by the rule.",
+      "evidence_quote": "## Breaking Changes\n\n### Removed Features\n- **XML log format**: No longer supported. All logs must use JSON format.\n- **Legacy sink API** (`/v2/sinks`): Removed. Use `/v3/destinations` instead.\n- **`LogRouter.connect()` method**: Replaced by `LogRouter.init()` which accepts a config object instead of positional arguments."
+    },
+    {
+      "rule_id": "COMPL-003",
+      "chunk_index": 0,
+      "verdict": "fail",
+      "reasoning": "The chunk outlines changes and removals of features but does not provide explicit deprecation notices or mention the version when these features were deprecated, nor does it provide the recommended replacement in a structured format.",
+      "evidence_quote": "Removed methods:\n- `router.connect()` \u2014 use `LogRouter.init(config)` instead\n- `router.set_format(\"xml\")` \u2014 XML format no longer supported"
+    },
+    {
+      "rule_id": "STRUCT-001",
+      "chunk_index": 1,
+      "verdict": "fail",
+      "reasoning": "The chunk does not contain an overview or introduction section. It includes a rollback procedure, changelog, and license information, none of which describe what the documented system or API does.",
+      "evidence_quote": "This checks your configuration file, tests sink connectivity, and validates a sample log entry against the v3 format requirements."
+    },
+    {
+      "rule_id": "STRUCT-002",
+      "chunk_index": 1,
+      "verdict": "fail",
+      "reasoning": "The chunk contains sections for 'Rollback Procedure', 'Changelog', and 'License', but there is no Table of Contents summarizing or linking to these sections. The rule specifically requires a Table of Contents with links if there are more than five sections in the document.",
+      "evidence_quote": "## Rollback Procedure\n\n## Changelog\n\n## License"
+    },
+    {
+      "rule_id": "STRUCT-003",
+      "chunk_index": 1,
+      "verdict": "pass",
+      "reasoning": "The headings in this chunk follow a consistent hierarchy with no skipped levels. The sequence follows H2 for main sections and H3 for subsections under the changelog.",
+      "evidence_quote": "## Rollback Procedure\n...\n## Changelog\n### v3.0.0 (2026-04-01)"
+    },
+    {
+      "rule_id": "COMP-001",
+      "chunk_index": 1,
+      "verdict": "fail",
+      "reasoning": "The chunk does not include documentation for any API endpoints or functions including their parameters with name, type, and description. It only contains a rollback procedure, changelog, and license information.",
+      "evidence_quote": "This checks your configuration file, tests sink connectivity, and validates a sample log entry against the v3 format requirements."
+    },
+    {
+      "rule_id": "COMP-002",
+      "chunk_index": 1,
+      "verdict": "fail",
+      "reasoning": "The chunk lacks descriptions of return values for functions or endpoints. No such information is provided in the rollback procedure, changelog, or other sections included in the chunk.",
+      "evidence_quote": "If migration fails:\n1. Revert to `logrouter==2.9.0`\n2. Restore your `logrouter.ini` configuration\n3. Restart the service"
+    },
+    {
+      "rule_id": "COMP-003",
+      "chunk_index": 1,
+      "verdict": "fail",
+      "reasoning": "The chunk does not mention any error cases or document error codes or exception types. Instead, it describes procedures unrelated to error handling, such as rollback procedures and a changelog.",
+      "evidence_quote": "This checks your configuration file, tests sink connectivity, and validates a sample log entry against the v3 format requirements."
+    },
+    {
+      "rule_id": "COMP-004",
+      "chunk_index": 1,
+      "verdict": "fail",
+      "reasoning": "The chunk lacks any information about API authentication, such as authentication methods, headers, or token formats, which is required by the rule.",
+      "evidence_quote": "This checks your configuration file, tests sink connectivity, and validates a sample log entry against the v3 format requirements."
+    },
+    {
+      "rule_id": "CODE-001",
+      "chunk_index": 1,
+      "verdict": "fail",
+      "reasoning": "The chunk does not contain any runnable code examples demonstrating basic usage. The content is focused on configuration, rollback procedures, changelog, and licensing.",
+      "evidence_quote": "This checks your configuration file, tests sink connectivity, and validates a sample log entry against the v3 format requirements."
+    },
+    {
+      "rule_id": "CODE-002",
+      "chunk_index": 1,
+      "verdict": "fail",
+      "reasoning": "The chunk does not contain any code examples to evaluate for syntactical validity. The content primarily consists of procedures, changelogs, and license information, which are unrelated to code examples.",
+      "evidence_quote": "This checks your configuration file, tests sink connectivity, and validates a sample log entry against the v3 format requirements."
+    },
+    {
+      "rule_id": "CODE-003",
+      "chunk_index": 1,
+      "verdict": "fail",
+      "reasoning": "The chunk does not contain any code examples, and it specifies that old API endpoints, like `/v2/sinks`, are deprecated, which could be evidence of a mismatch if examples used such endpoints. Without a code example present to evaluate, a definitive assessment against the current API surface is not possible.",
+      "evidence_quote": "BREAKING: Removed legacy `/v2/sinks` endpoint"
+    },
+    {
+      "rule_id": "ACC-001",
+      "chunk_index": 1,
+      "verdict": "fail",
+      "reasoning": "The chunk mentions 'logrouter==2.9.0' as a version, which may be stale if v3.0.0 is the current release. This incongruity suggests a stale version reference.",
+      "evidence_quote": "Revert to `logrouter==2.9.0`"
+    },
+    {
+      "rule_id": "ACC-002",
+      "chunk_index": 1,
+      "verdict": "fail",
+      "reasoning": "The chunk contains a link reference '[LICENSE](./LICENSE)' but does not provide information about whether this internal link resolves or not. The rule requires confirmation of link functionality, which is absent.",
+      "evidence_quote": "LogRouter is licensed under the MIT License. See [LICENSE](./LICENSE) for the full text."
+    },
+    {
+      "rule_id": "COMPL-001",
+      "chunk_index": 1,
+      "verdict": "pass",
+      "reasoning": "The chunk includes a License section which states the document is licensed under the MIT License and provides a link to the LICENSE file.",
+      "evidence_quote": "## License\n\nLogRouter is licensed under the MIT License. See [LICENSE](./LICENSE) for the full text."
+    },
+    {
+      "rule_id": "COMPL-002",
+      "chunk_index": 1,
+      "verdict": "pass",
+      "reasoning": "Every breaking change mentioned in the changelog section of this chunk has a corresponding entry. The changes relate to the removal of XML log format support, removal of legacy endpoints, changes to method names, and format alterations.",
+      "evidence_quote": "## Changelog\n\n### v3.0.0 (2026-04-01)\n- BREAKING: Removed XML log format support\n- BREAKING: Removed legacy `/v2/sinks` endpoint\n- BREAKING: Changed `LogRouter.connect()` to `LogRouter.init(config)`\n- BREAKING: Timestamp format changed to ISO 8601"
+    },
+    {
+      "rule_id": "COMPL-003",
+      "chunk_index": 1,
+      "verdict": "fail",
+      "reasoning": "The chunk does not contain any explicit references to deprecated features, nor does it mention deprecation notices including the version and recommended replacements.",
+      "evidence_quote": "### v3.0.0 (2026-04-01)\n- BREAKING: Removed XML log format support\n- BREAKING: Removed legacy `/v2/sinks` endpoint\n- BREAKING: Changed `LogRouter.connect()` to `LogRouter.init(config)`\n- BREAKING: Timestamp format changed to ISO 8601"
+    }
+  ],
+  "total_chunks": 2,
+  "total_rules": 15,
+  "total_llm_calls": 30
+}

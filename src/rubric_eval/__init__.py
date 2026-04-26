@@ -1,8 +1,10 @@
 """
-llm-rubric-eval: Reference implementation for rubric-driven LLM grading evaluation.
+llm-rubric-eval: A reference pattern for compiling unstructured rubrics into
+machine-readable schemas, then evaluating documents against them.
 
-Demonstrates rubric compilation, brute-force chunk×rule evaluation, and
-golden-set metrics. Intentionally minimal. Not a product.
+The compiler is the artifact — handles clean CSV, boolean composites, and
+document masquerades. The evaluator and eval harness measure whether the
+compilation produced rules that can be evaluated correctly.
 """
 
 __version__ = "0.1.0"
