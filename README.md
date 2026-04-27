@@ -252,7 +252,7 @@ Four known failure modes, documented here because shipping with honest limitatio
 ## See also
 
 - [RegTriage](https://github.com/ree2raz/RegTriage-OpenEnv) — an agentic compliance auditing environment. Implements the budget-aware, tool-mediated architecture that replaces brute-force evaluation.
-- [audited-tool-mcp](https://github.com/ree2raz/audited-tool-mcp) — MCP server for auditable tool execution with structured logging and compliance traces.
+- [auditguard-mcp](https://github.com/ree2raz/auditguard-mcp) — MCP server for auditable tool execution with structured logging and compliance traces.
 
 ## License
 
