@@ -251,6 +251,7 @@ Four known failure modes, documented here because shipping with honest limitatio
 
 ## See also
 
+- [Designing LLM-based rubric graders for high-stakes compliance](https://rituraj.info/posts/compliance-qa-llm-scorecard-pattern/) — the blog post that explains why the compiler is the hard part, why brute-force ships first, and how to think about the rebuild toward agentic evaluation.
 - [RegTriage](https://github.com/ree2raz/RegTriage-OpenEnv) — an agentic compliance auditing environment. Implements the budget-aware, tool-mediated architecture that replaces brute-force evaluation.
 - [auditguard-mcp](https://github.com/ree2raz/auditguard-mcp) — MCP server for auditable tool execution with structured logging and compliance traces.
 
